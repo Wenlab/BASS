@@ -25,10 +25,13 @@ from copy import deepcopy
 
 # cython: profile=True
 
-#P_ygs is the character likelihood function q(y|.) in the paper. Outputs the probability of observing y given s. This is defined for the GMM_synthetic model. 
-#This function specifies the emission probabilities of the mixture model. HAS to be defined.
 @cython.cdivision(True)
 cpdef double P_ygs(double [:] y, int s, int numclasses, double std):
+    """
+    P_ygs is the character likelihood function q(y|.) in the paper. Outputs the probability of observing y given s. 
+    This is defined for the GMM_synthetic model. 
+    This function specifies the emission probabilities of the mixture model. HAS to be defined.
+    """
     cdef int dim = 2
     cdef double means0 = 0
     cdef double means1 = 0
@@ -40,9 +43,12 @@ cpdef double P_ygs(double [:] y, int s, int numclasses, double std):
     cdef double prob2 =  exp(-(y[1] - means1)*(y[1] - means1)/(2*std*std))/sqrt(2*PI*std*std)
     return prob1*prob2
 
-#Sample from the mixture model. HAS to be defined. 
+
 @cython.cdivision(True)
 cpdef double [:] sample_y(int s, int numclasses, double std):
+    """
+    Sample from the mixture model. HAS to be defined.
+    """ 
     cdef int dim = 2
     cdef double means0 = 0
     cdef double means1 = 0
@@ -55,9 +61,12 @@ cpdef double [:] sample_y(int s, int numclasses, double std):
     Y[0] = means0 + std*np.random.randn()
     Y[1] = means1 + std*np.random.randn()
     return Y
-    
-#Q(Y|m) with no action pattern noise.     
+
+
 cpdef double P_YgS_func_noeps(double [:,:] Y,  np.int_t[:] S):
+    """
+    Q(Y|m) with no action pattern noise.
+    """     
     cdef int lenY = Y.shape[0]
     cdef int lenS = S.shape[0]
     cdef int i
@@ -68,12 +77,15 @@ cpdef double P_YgS_func_noeps(double [:,:] Y,  np.int_t[:] S):
         for i in range(lenS):
             prod = prod*Y[i,S[i]]
         return prod
-    
-#This is the implementation of Q(Y|m) using the recursive formula from the paper.   
+
+
 @cython.cdivision(True)
 @cython.boundscheck(False) # turn off bounds-checking for entire function
 @cython.wraparound(False)  # turn off negative index wrapping for entire function
 cpdef double P_YgS_func(double[:,:] Y, np.int_t [:] S, double [:] params, double[:,:] P_memo):
+    """
+    This is the implementation of Q(Y|m) using the recursive formula from the paper.
+    """
     cdef int i,j
     cdef double eps,p_d,p_ins
     eps = params[0]
@@ -98,7 +110,7 @@ cpdef double P_YgS_func(double[:,:] Y, np.int_t [:] S, double [:] params, double
                 P += (1-eps)*P_YgS_func(Y[:Ly-1],S[:Ls-1],params,P_memo)*Y[Ly-1,S[Ls-1]]
             elif i == 2 and eps*(1-p_d) > 1e-3: 
                 P += eps*(1-p_d)*P_YgS_func(Y[:Ly-2],S[:Ls-1],params,P_memo)*Y[Ly-1,S[Ls-1]]*Y[Ly-2,S[Ls-1]]
-#Can insert further cases here if more than insertion is to be allowed
+    #Can insert further cases here if more than insertion is to be allowed
     P_memo[Ly-1,Ls-1] = P
     return P
 
@@ -112,16 +124,23 @@ cpdef double P_YgS(double [:,:] Y,  np.int_t[:] S, double [:] params):
     cdef double [:,::1] P_memo = -5*np.ones((lenY,lenS),dtype = float)
     return P_YgS_func(Y,S,params,P_memo)/(1.0 - pow(params[0]*params[1],lenS)) #divide by the possibility of S -> null.
 
-#Maximum length of motif instantiations
+
 def get_lmax(w_dict,params):
+    """
+    Maximum length of motif instantiations.
+    """
     eps = params[0]
     p_d = params[1]
     p_ins = params[2]
     lengths = [len(w) for w in w_dict]
-    return 40#we set 20 as the length of maximal motif so 40 is the upper limit on the length of a motif instantiation with one insertion per symbol. 
+    return 40  #we set 20 as the length of maximal motif so 40 is the upper limit on the length of a motif instantiation with one insertion per symbol. 
 
-#This function is part of the optimization of the code. Gives you the minimum and maximum lengths a motif can mutate to, based on the p_d and e_p. 
+
 def get_lmin_and_max(w,params):
+    """
+    This function is part of the optimization of the code. 
+    Gives you the minimum and maximum lengths a motif can mutate to, based on the p_d and e_p.
+    """
     l = len(w)
     eps = params[0]
     p_d = params[1]
@@ -139,15 +158,20 @@ def get_lmin_and_max(w,params):
     return lmin,lmax
     
 
-#Append sequences
 def append_mseq(sym,seqs):
+    """
+    Append sequences.
+    """
     mseqs = []
     for i in range(len(seqs)):
         mseqs += [[sym] + seqs[i]]
     return mseqs
 
-#Generate mutated sequences from a motif template m, drawn from P(\tilde{m}|m). 
+
 def generate_mutated_sequences(seq,eps,p_d):
+    """
+    Generate mutated sequences from a motif template m, drawn from P(\tilde{m}|m). 
+    """
     mseqs = []
     probs_mseqs = []
     if len(seq) == 1:
@@ -190,8 +214,11 @@ def generate_mutated_sequences(seq,eps,p_d):
             
     return seqs_out,probs_out
 
-#Compute P(\tilde{m}|m) i.e., the probability of a mutated sequence given the motif template. 
+
 def get_mutated_sequences_prob(seq,eps,p_d):
+    """
+    Compute P(\tilde{m}|m) i.e., the probability of a mutated sequence given the motif template.
+    """
     if len(seq) == 1:
         return [seq],[1.0]
     else:
@@ -209,14 +236,16 @@ def get_mutated_sequences_prob(seq,eps,p_d):
         return seqs,probs
 
 
-#This function computes the locations (index i) and lengths (index l) where a particular motif (index w) could possibly fit 
-#based on a threshold w_thr_l on Q(Y_{i-l+1:i}|w). 
-#Computing this is the rate-limiting step. 
-#The MLE to get p_m is much more efficient if W_il is pre-computed and then optimization performed.
 @cython.cdivision(True)
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def get_W_ils(w_dict, double[:,:] Y, np.int_t[:] lengths_Y, double [:] params):
+    """
+    This function computes the locations (index i) and lengths (index l) where a particular motif (index w) could possibly fit 
+    based on a threshold w_thr_l on Q(Y_{i-l+1:i}|w). 
+    Computing this is the rate-limiting step. 
+    The MLE to get p_m is much more efficient if W_il is pre-computed and then optimization performed.
+    """
     cdef int L = Y.shape[0]
     cdef int D = len(w_dict)
     cdef int K = lengths_Y.shape[0]
@@ -263,8 +292,11 @@ def get_W_ils(w_dict, double[:,:] Y, np.int_t[:] lengths_Y, double [:] params):
                     W_ils[w] += [[i,l,Q_gw_view[i,l]]] 
     return W_ils
 
-#Compute the likelihood of a particular motif along the dataset. 
+
 def get_Q_gw_from_W_il(W_ils_w,Y,w_dict,params):
+    """
+    Compute the likelihood of a particular motif along the dataset.
+    """
     L = Y.shape[0]
     lmax = get_lmax(w_dict,params)
     Q_gw_w = np.zeros((L,lmax))
@@ -273,8 +305,10 @@ def get_Q_gw_from_W_il(W_ils_w,Y,w_dict,params):
     return Q_gw_w
 
 
-#Compute the likelihood of all motifs at a particular locus on the dataset. 
 def get_Q_gw_i(double [:,:] Yseq, w_dict, double [:] params):
+    """
+    Compute the likelihood of all motifs at a particular locus on the dataset.
+    """
     cdef int L = Yseq.shape[0]
     cdef int lmax = get_lmax(w_dict,params)
     cdef int D = len(w_dict)
@@ -286,8 +320,11 @@ def get_Q_gw_i(double [:,:] Yseq, w_dict, double [:] params):
             Q_gw_i_view[l,w] = P_YgS(Yseq[-l-1:],w_dict[w],params)
     return Q_gw_i
 
-#Evaluate the marginal probability Q(Y_{i-l+1:i}) at each locus i and length l. 
+
 def evaluate_Q(double[:] P_w, W_ils, int L, int lmax, int D):
+    """
+    Evaluate the marginal probability Q(Y_{i-l+1:i}) at each locus i and length l.
+    """
     Q = np.zeros((L,lmax), dtype=float)
     cdef double[:,:] Q_view = Q
     cdef int i,l,w,w_il_length
@@ -299,8 +336,11 @@ def evaluate_Q(double[:] P_w, W_ils, int L, int lmax, int D):
             Q_view[i,l] += P_w[w]*W_il[2]
     return Q
 
-#Evaluate R defined in the paper. 
+
 def evaluate_R(double[:,:] Q):
+    """
+    Evaluate R defined in the paper.
+    """
     cdef int L = Q.shape[0]
     cdef int i,l,lmax
     lmax = Q.shape[1]
@@ -315,8 +355,11 @@ def evaluate_R(double[:,:] Q):
             R_view[i] += Q[i,l]/prod
     return R
 
-#Evaluate R' defined in the paper. 
+
 def evaluate_R1(double[:,:] Q):
+    """
+    Evaluate R' defined in the paper.
+    """
     cdef int L = Q.shape[0]
     cdef int i,l,lmax
     lmax = Q.shape[1]
@@ -331,8 +374,11 @@ def evaluate_R1(double[:,:] Q):
             R1_view[i] += Q[i+l,l]/prod
     return R1
 
-#Evaluate G defined in the paper. 
+
 def evaluate_G(double [:] R,double [:] R1,int lmax):
+    """
+    Evaluate G defined in the paper.
+    """
     cdef int L = R.shape[0]
     G = np.zeros((L,lmax), dtype= float)
     cdef double[:,:] G_view = G
@@ -347,12 +393,15 @@ def evaluate_G(double [:] R,double [:] R1,int lmax):
             G_view[i,l] = prod/prod2
     return G
 
+
 def evaluate_F(R):
     return -np.sum(np.log(R))
 
 
-#Evaluate gradient of free energy
 def evaluate_dF(double[:] P_w, double[:,:] G, W_ils):
+    """
+    Evaluate gradient of free energy.
+    """
     cdef int D = P_w.shape[0]
     
     dF = np.zeros(D, dtype = float)
@@ -368,8 +417,11 @@ def evaluate_dF(double[:] P_w, double[:,:] G, W_ils):
             dF_view[w] += -G[i,l]*W_il[2] 
     return dF
 
-#Evaluate free energy for a particular sequence. 
+
 def evaluate_F_seq(Y,lengths_Y, P_w, w_dict, params):
+    """
+    Evaluate free energy for a particular sequence.
+    """
     lmax = get_lmax(w_dict,params)
     L = Y.shape[0]
     D = len(w_dict)
@@ -381,8 +433,11 @@ def evaluate_F_seq(Y,lengths_Y, P_w, w_dict, params):
     return F
 
 
-#This is used in dictionary expansion. Compute the number of times the concatenated motif w1w2 occurs in the dataset upto a pre-factor. 
 cpdef double subroutine_Nw1w2(np.int_t[:] w1w2, double [:,:] G, np.int_t [:] nz_pos, double [:,:] Q_gw1, double [:,:] Q_gw2, int l1,int l2, double [:] params):
+    """
+    This is used in dictionary expansion. 
+    Compute the number of times the concatenated motif w1w2 occurs in the dataset upto a pre-factor.
+    """
     cdef int L = G.shape[0]
     cdef double Nw1w2 = 0
     cdef double eps = params[0]
@@ -403,8 +458,11 @@ cpdef double subroutine_Nw1w2(np.int_t[:] w1w2, double [:,:] G, np.int_t [:] nz_
             Nw1w2 += temp*G[i,l]
     return Nw1w2
 
-#This is used to sample an output sequence Y given a motif template S. 
+
 def sample(S,params,model):
+    """
+    This is used to sample an output sequence Y given a motif template S.
+    """
     eps = params[0]
     p_d = params[1]
     p_ins = params[2]
@@ -423,8 +481,11 @@ def sample(S,params,model):
                         Y += [model._generate_sample_from_state(s)]
     return Y
 
-#Convert a data vector Y to a sequence of probability vectors q(Y_i|c_j).
+
 def convert_Y_to_Y_Ps(Y,params,model):
+    """
+    Convert a data vector Y to a sequence of probability vectors q(Y_i|c_j).
+    """
     Sigma = int(params[7])
     Y_Ps = np.zeros((len(Y),Sigma),dtype = float)
     for i in range(len(Y)):
@@ -432,12 +493,15 @@ def convert_Y_to_Y_Ps(Y,params,model):
             Y_Ps[i,s] = model._compute_likelihood(Y[i],s)
     return Y_Ps
 
-#Compute the Jensen-Shannon divergence matrix between all pairs of motifs in the dictionary. 
-#This is where the editdistance library is used i.e.,  
-#in order to restrict the computation to somewhat close motifs since most motifs are separated by the maximal distance 1.
-#This takes annoyingly long to compute. 
+
 @cython.cdivision(True)
 def get_JS(w_dict,double [:] params, model):
+    """
+    Compute the Jensen-Shannon divergence matrix between all pairs of motifs in the dictionary. 
+    This is where the editdistance library is used i.e.,  
+    in order to restrict the computation to somewhat close motifs since most motifs are separated by the maximal distance 1.
+    This takes annoyingly long to compute.
+    """
     cdef int niter = 500
     cdef int D = len(w_dict)
     cdef double [:,:] dij = np.zeros((D,D),dtype = float)
@@ -474,8 +538,11 @@ def get_JS(w_dict,double [:] params, model):
             JS[di][dj] = (dij[di,dj] + dij[dj,di])/(2*log(2))
     return JS
 
-#This is used for the Markovianity test. Implements the forward algorithm for HMMs. 
+
 cpdef double P_YgHMM(double[:,:] Y, double[:,:] transmat_hmm, double[:] rho):
+    """
+    This is used for the Markovianity test. Implements the forward algorithm for HMMs.
+    """
     cdef int l = Y.shape[0]
     cdef int Sigma = Y.shape[1]
     alphas = np.zeros((l,Sigma),dtype = float)
@@ -494,8 +561,11 @@ cpdef double P_YgHMM(double[:,:] Y, double[:,:] transmat_hmm, double[:] rho):
         output += alphas_view[-1,s]
     return output
 
-#This is used for the Markovianity test. Compute the expected counts from a Markovian model. 
+
 def calculate_expected_frequency_hmm(seq,transmat,rho):
+    """
+    This is used for the Markovianity test. Compute the expected counts from a Markovian model.
+    """
     l = len(seq)
     prob = 1
     for i in range(l):
@@ -505,10 +575,13 @@ def calculate_expected_frequency_hmm(seq,transmat,rho):
             prob *= transmat[seq[i-1]][seq[i]]
     return prob
 
-#This is used for the Markovianity test. Empirical frequency of a motif. 
+
 @cython.cdivision(True)
 @cython.boundscheck(False)
 cpdef double calculate_empirical_frequency_hmm(np.int_t [:] seq, double [:,:] Y, double [:,:] transmat_, double [:] stationary_probs_):
+    """
+    This is used for the Markovianity test. Empirical frequency of a motif.
+    """
     cdef int l = seq.shape[0]
     cdef int L = Y.shape[0]
     cdef double prob = calculate_expected_frequency_hmm(seq,transmat_, stationary_probs_)
@@ -525,16 +598,23 @@ cpdef double calculate_empirical_frequency_hmm(np.int_t [:] seq, double [:,:] Y,
         counts += count
     return counts/(L-l)
 
-#Convert a list of motifs to a single array of letters. 
+
 def create_word_array(ws,w_dict):
+    """
+    Convert a list of motifs to a single array of letters.
+    """
     arr = np.array([])
     for w in ws:
         arr = np.concatenate((arr,w_dict[w]))
     arr = np.array(arr,dtype = int)
     return arr
 
-#This is zeta(m) from the paper. Computes the probability of all possible partitions of a motif. 
+
 def Z_partitions(seq,P_w,w_dict):
+    """
+    This is zeta(m) from the paper. 
+    Computes the probability of all possible partitions of a motif.
+    """
     L = len(seq)
     D = len(w_dict)
     lengths = [len(w) for w in w_dict]
@@ -550,9 +630,12 @@ def Z_partitions(seq,P_w,w_dict):
                         Z_p[i] += P_w[w]
     return Z_p[-1] 
 
-#Computes the number of times a concatenated motif occurs in the dataset. The subroutine_Nw1w2 is called here. 
-#Directly gives the p-value for the over-representation of the concatenated motif relative to random juxtaposition. 
+
 def Nw1w2(ws, P_w, w_dict, Y, Q, Q_gw1, Q_gw2, nz_pos, params):
+    """
+    Computes the number of times a concatenated motif occurs in the dataset. The subroutine_Nw1w2 is called here. 
+    Directly gives the p-value for the over-representation of the concatenated motif relative to random juxtaposition.
+    """
     arr = create_word_array(ws,w_dict)
     lengths = [len(w) for w in w_dict]
     l1 = len(w_dict[ws[0]])
@@ -580,8 +663,10 @@ def Nw1w2(ws, P_w, w_dict, Y, Q, Q_gw1, Q_gw2, nz_pos, params):
     return stats.chi2.sf(m2lnLR,1)
 
 
-#Free energy as a function of betas. beta_i = log(p_{-1}/p_i). 
 def F_beta(betas, W_ils, L, lmax, D, params):
+    """
+    Free energy as a function of betas. beta_i = log(p_{-1}/p_i).
+    """
     P_w = np.zeros(len(betas)+1)
     P_w[:-1] = np.exp(-betas)
     P_w[-1] = 1.0
@@ -595,8 +680,11 @@ def F_beta(betas, W_ils, L, lmax, D, params):
     F = evaluate_F(R)
     return F/L
 
-#Gradient of free energy in terms of betas.                                     
+
 def dF_beta(betas, W_ils, L, lmax, D,params):
+    """
+    Gradient of free energy in terms of betas.
+    """
     P_w = np.zeros(D)
     P_w[:-1] = np.exp(-betas)
     P_w[-1] = 1.0
@@ -616,8 +704,11 @@ def dF_beta(betas, W_ils, L, lmax, D,params):
         
     return dF_betas/L
 
-#Minimizing free energy using gradient descent. 
+
 def minimize_F(Y, W_ils, L, lmax, D, params, method):
+    """
+    Minimizing free energy using gradient descent.
+    """
     betas0 = 0.1*np.random.randn(D-1)
     bounds = []
     for i in range(len(betas0)):
@@ -626,8 +717,10 @@ def minimize_F(Y, W_ils, L, lmax, D, params, method):
     return res
 
 
-#Optimizing for P_w. MLE. 
 def get_P_w(Y, lengths_Y, w_dict, params,method = 'L-BFGS-B'):
+    """
+    Optimizing for P_w. MLE.
+    """
     lmax = get_lmax(w_dict, params)
     L = len(Y)
     D = len(w_dict)
@@ -639,8 +732,11 @@ def get_P_w(Y, lengths_Y, w_dict, params,method = 'L-BFGS-B'):
     P_w_fit /= np.sum(P_w_fit)
     return P_w_fit
 
-#This is called in the "decode" function below. 
+
 def decode_Y(Y,P_w,w_dict,params):
+    """
+    This is called in the "decode" function below.
+    """
     D = len(w_dict)
     L = len(Y)
     K = np.zeros(L)
@@ -683,8 +779,11 @@ def decode_Y(Y,P_w,w_dict,params):
     
     return w_ML,ws,ls
 
-#Decoding the most likely sequence of motifs given the dataset and the dictionary of motifs using the Viterbi-like algorithm.      
+
 def decode(Y,lengths_Y,w_dict,params):
+    """
+    Decoding the most likely sequence of motifs given the dataset and the dictionary of motifs using the Viterbi-like algorithm.
+    """
     L = len(Y)
     D = len(w_dict)
     lmax = get_lmax(w_dict,params)
@@ -702,8 +801,11 @@ def decode(Y,lengths_Y,w_dict,params):
         kk += lths
     return w_MLs,words,wordlengths
 
-#Generating synthetic data
+
 def generate_Y(L, P_w, w_dict, params, model):
+    """
+    Generating synthetic data.
+    """
     l = 0
     Y = []
     ws = []
@@ -717,9 +819,12 @@ def generate_Y(L, P_w, w_dict, params, model):
         l += len(S)
     Ydata = np.array(Y)
     return convert_Y_to_Y_Ps(Y,params,model),words_true,Ydata
-    
-#Generating a synthetic dictionary    
+
+
 def generate_w_dict(alphfreqs, D, lmean):
+    """
+    Generating a synthetic dictionary.
+    """
     w_dict= []
     alphabetsize = len(alphfreqs)
     flag = 0
@@ -743,8 +848,11 @@ def generate_w_dict(alphfreqs, D, lmean):
     w_dict = [np.array(w, dtype = int) for w in w_dict]
     return w_dict
 
-#Removing duplicate motifs from the dictionary. This is the function that implements dictionary truncation based on JS divergence. 
+
 def remove_duplicates_w_dict(P_w,w_dict,params,model):
+    """
+    Removing duplicate motifs from the dictionary. This is the function that implements dictionary truncation based on JS divergence.
+    """
     eps = params[0]
     dups = []
     if eps > 1e-3:
@@ -773,8 +881,11 @@ def remove_duplicates_w_dict(P_w,w_dict,params,model):
         dups -= 1
     return w_dict
 
-#Further truncate dictionary if the motif occurs fewer than a certain number of times. 5 copies is the currently set threshold
+
 def truncate_w_dict(P_w,w_dict,thr = 5e-4): 
+    """
+    Further truncate dictionary if the motif occurs fewer than a certain number of times. 5 copies is the currently set threshold.
+    """
     i = 0
     P_w = list(P_w)
     while i < len(w_dict):#Remove low probability words
@@ -785,8 +896,11 @@ def truncate_w_dict(P_w,w_dict,thr = 5e-4):
         i+=1
     return w_dict
 
-#Keep truncating until all motifs occurs more than 5 times. In its current implementation only truncates once. 
+
 def prune_w_dict(Y,lengths_Y, w_dict, params,model):
+    """
+    Keep truncating until all motifs occurs more than 5 times. In its current implementation only truncates once.
+    """
     D = len(w_dict)
     Dnew = 0
     i=0
@@ -804,8 +918,12 @@ def prune_w_dict(Y,lengths_Y, w_dict, params,model):
         i+=1
     return w_dict
 
-#This is used at the very end of the algorithm. Used to remove low probability single letters from the dictionary. 5 copies is the threshold again.
+
 def prune_letters_w_dict(Y,P_w,w_dict): 
+    """
+    This is used at the very end of the algorithm. Used to remove low probability single letters from the dictionary. 
+    5 copies is the threshold again.
+    """
     lengths = [len(w) for w in w_dict]
     lmean = np.sum(lengths*P_w)
     thr = 5*lmean/len(Y)
@@ -820,8 +938,11 @@ def prune_letters_w_dict(Y,P_w,w_dict):
         i+=1
     return w_dict
 
-#This is the main function used for dictionary expansion. This function is heavily optimized. 
+
 def get_words_to_add(Y,lengths_Y,w_dict,params):
+    """
+    This is the main function used for dictionary expansion. This function is heavily optimized.
+    """
     words_to_add = []
     P_w = get_P_w(Y,lengths_Y, w_dict, params)
     lengths = [len(w) for w in w_dict]
@@ -857,8 +978,11 @@ def get_words_to_add(Y,lengths_Y,w_dict,params):
                 
     return words_to_add
 
-#One iteration of dictionary expansion and truncation.
+
 def update_w_dict(Y,lengths_Y,w_dict,params,model):
+    """
+    One iteration of dictionary expansion and truncation.
+    """
     words_to_add = get_words_to_add(Y,lengths_Y,w_dict,params) #expand              
     w_dict = w_dict + words_to_add
     print("Dictionary length %d" %len(w_dict))
@@ -866,6 +990,7 @@ def update_w_dict(Y,lengths_Y,w_dict,params,model):
     print("Pruned length %d" %len(w_dict))
     sys.stdout.flush()
     return w_dict
+
 
 def get_entropy(Y):
     P_S = np.zeros(Y.shape[1])
@@ -875,10 +1000,13 @@ def get_entropy(Y):
     entropy = np.mean(-P_Yi*np.log(P_Yi+1e-15))
     return entropy
 
-#Main function used to run the algorithm. 
-#Takes in sequences of probability vectors over an alphabet of size Sigma and the lengths of each sequence (the sum of lengths_Y should equal total length of Y)
-#Returns the probabilities of each motif and the dictionary itself. 
+
 def solve_dictionary(Y,lengths_Y,params,model,niter = 6):
+    """
+    Main function used to run the algorithm. 
+    Takes in sequences of probability vectors over an alphabet of size Sigma and the lengths of each sequence (the sum of lengths_Y should equal total length of Y)
+    Returns the probabilities of each motif and the dictionary itself.
+    """
     if np.sum(lengths_Y) != len(Y) or np.min(lengths_Y) <= 0:
         print("Invalid lengths_Y", np.sum(lengths_Y), len(Y))
         sys.stdout.flush()
@@ -914,274 +1042,4 @@ def solve_dictionary(Y,lengths_Y,params,model,niter = 6):
     print("Final length of w_dict = %d" %(len(w_dict)))
     print("Done, w_dict length = %d" %(len(w_dict)))
     return P_w,w_dict
-
-#Definition of the model. This is important. You need to define your own P_ygs and sample_y. The current implementation of these two functions is for 
-#the synthetic data case presented in the paper. 
-class GMM_synthetic:
-    def __init__(self,params):
-        self.Sigma = int(params[7])
-        self.std = float(params[8])
-    def _compute_likelihood(self,y,s):
-        return P_ygs(y,s,self.Sigma,self.std)
-    def _generate_sample_from_state(self,s):
-        return sample_y(s,self.Sigma,self.std)
-
-#This is our implementation of a GMM used to fit multiple datasets simultaneously (see paper). Not used for the synthetic dataset.
-class GMM_model:
-    def __init__(self,numclasses):
-        self.numclasses = numclasses
-        
-    def E_step(self,datasets):
-        N = datasets.shape[1]
-        numsets = datasets.shape[0]
-        gamma_ = np.zeros((numsets,N,self.numclasses))
-        for k in range(self.numclasses):
-            gamma_[:,:,k] = 1e-20 + self.weights_[:,k][:,np.newaxis]*stats.multivariate_normal.pdf(datasets,mean = self.means_[k],cov = self.covars_[k])
-        gamma_ = gamma_/np.sum(gamma_,axis=2)[:,:,np.newaxis]
-        return gamma_
-    
-    def M_step(self,datasets,gamma_):
-        for k in range(self.numclasses):
-            Nk = np.sum(gamma_[:,:,k])
-            self.means_[k] = np.sum(np.sum(gamma_[:,:,k][:,:,None]*datasets,axis=1),axis=0)/Nk
-            outerprod = (datasets - self.means_[k])[:,:,:,None]*(datasets - self.means_[k])[:,:,None,:]
-            self.covars_[k] = np.sum(np.sum(gamma_[:,:,k][:,:,None,None]*outerprod,axis=1),axis=0)/Nk
-            self.weights_ = np.sum(gamma_,axis=1)/self.N
-            
-    def LL(self,datasets):
-        N = datasets.shape[1]
-        numsets = datasets.shape[0]
-        temp = np.zeros((numsets,N))
-        for k in range(self.numclasses):
-            temp += self.weights_[:,k][:,None]*stats.multivariate_normal.pdf(datasets,mean = self.means_[k],cov = self.covars_[k])
-        LL = np.mean(np.log(temp + 1e-80))
-        return -LL
-        
-    def solve(self,datasets):
-        self.numsets= len(datasets)
-        self.dim = datasets.shape[2]
-        self.N = datasets.shape[1]
-        self.means_ = np.zeros((self.numclasses,self.dim))
-        self.covars_ = np.zeros((self.numclasses, self.dim,self.dim))
-        self.weights_ = np.zeros((self.numsets,self.numclasses))
-        
-        datasets_flat = np.reshape(datasets,(-1,datasets.shape[2]))
-        covar = np.cov(datasets_flat, rowvar = False)
-        mean = np.mean(datasets_flat, axis = 0)
-        
-        numinits = 20
-        means_init = np.zeros((numinits,self.numclasses,self.dim))
-        covars_init = np.zeros((numinits,self.numclasses,self.dim,self.dim))
-        weights_init = np.zeros((numinits,self.numsets,self.numclasses))
-        LL_init = np.zeros(numinits)
-        for init_ in range(numinits):
-            for i in range(self.numclasses):
-                means_init[init_][i] = np.random.multivariate_normal(mean,covar)
-                covars_init[init_][i] = deepcopy(covar)
-
-            for j in range(self.numsets):
-                weights_init[init_][j] = np.random.dirichlet(5*np.ones(self.numclasses))
-            self.means_ = means_init[init_]
-            self.covars_ = covars_init[init_]
-            self.weights_ = weights_init[init_]
-            LL_init[init_] = self.LL(datasets)
-        best = np.argmin(LL_init)
-        self.means_ = means_init[best]
-        self.covars_ = covars_init[best]
-        self.weights_ = weights_init[best]
-            
-        LL_curr = self.LL(datasets)
-        LL_prev = 0
-        print("Initial negative log-likelihood per sample = %.4f" %LL_curr)
-        num = 0
-        while np.abs(LL_curr - LL_prev) > 1e-4:
-            gamma_= self.E_step(datasets)
-            self.M_step(datasets,gamma_)
-            LL_prev = LL_curr
-            LL_curr = self.LL(datasets)
-            num += 1
-            #print(LL_curr)
-        print("Final negative log-likelihood per sample = %.4f" %LL_curr)
-        print("Number of iterations = %d" %num)
-        
-    def _compute_posterior(self,y,set_index):
-        post = np.zeros(self.numclasses)
-        for k in range(self.numclasses):
-            post[k] = self.weights_[set_index][k]*self._compute_likelihood(y,k)
-        return post/np.sum(post)
-        
-    def _compute_likelihood(self,y,s):
-        return stats.multivariate_normal.pdf(y,mean = self.means_[s],cov = self.covars_[s])
-    
-    def _compute_log_likelihood(self,data):
-        Y = np.zeros((len(data),self.numclasses))
-        for k in range(self.numclasses):
-            Y[:,k] = np.log(stats.multivariate_normal.pdf(data,mean = self.means_[k],cov = self.covars_[k]) + 1e-80)
-        return Y
-    def score(self,dataset,set_index):
-        temp = np.zeros(len(dataset))
-        for k in range(self.numclasses):
-            temp += self.weights_[set_index,k]*stats.multivariate_normal.pdf(dataset,mean = self.means_[k],cov = self.covars_[k])
-        LL = np.sum(np.log(temp + 1e-80))
-        return LL
-        
-    def _generate_sample_from_state(self,s):
-        return np.random.multivariate_normal(self.means_[s],self.covars_[s])
-    
-    def _read_params(self,means_,covars_,weights_):
-        self.numclasses = means_.shape[0]
-        self.means_ = means_
-        self.covars_ = covars_
-        self.weights_ = weights_
-        
-    def _save_params(self,filename):
-        np.save(filename + "_means",self.means_)
-        np.save(filename + "_covars",self.covars_)
-        np.save(filename + "_weights",self.weights_)
-
-
-#The functions below are for the various tests and comparisons done in the paper. 
-        
-#Implementation of the forward backward algorithm to compute the transition matrix for the HMM.         
-def compute_transmat(Y):
-    #Initialize transition matrices
-    numclasses = Y.shape[1]
-    transmat_ = np.zeros((numclasses,numclasses))
-    stationary_probs_ = np.random.dirichlet(5*np.ones(numclasses))
-    for k in range(numclasses):
-        transmat_[k] = np.random.dirichlet(5*np.ones(numclasses))
-    for k in range(numclasses):
-        for iter_ in range(50):
-            stationary_probs_ = np.einsum('i,ij', stationary_probs_, transmat_)
-            
-    numiter = 100
-    LLs = np.zeros(numiter)
-    
-    #compute alphas
-    for iter_ in range(numiter):
-        N = Y.shape[0]
-        alphas = np.zeros((N,numclasses))
-        norms = np.zeros(N)
-        for i in range(N):
-            if i == 0:
-                alphas[i] = stationary_probs_*Y[i] + 1e-12
-            else:  
-                alphas[i] = np.einsum('i,ij',alphas[i-1],transmat_)*Y[i] + 1e-12
-            norms[i] = np.sum(alphas[i])
-            alphas[i] /= norms[i]
-
-        
-        LLs[iter_] = -np.sum(np.log(norms + 1e-20))/N
-        #print(iter_,LLs[iter_])
-        if iter_ > 5 and np.abs(LLs[iter_] - LLs[iter_-1]) < 1e-4:
-            break
-        #compute betas
-        betas = np.zeros((N,numclasses))
-        for i in range(N-1,-1,-1):
-            if i == N-1:
-                betas[i] = 1.0 + 1e-12
-            else:  
-                betas[i] = np.einsum('j,ij,j', betas[i+1], transmat_,Y[i+1]) + 1e-12
-            betas[i] /= np.sum(betas[i])
-
-        #compute states
-        gamma_ = np.zeros((N,numclasses))
-        for i in range(N):
-            gamma_[i] = alphas[i]*betas[i]/np.sum(alphas[i]*betas[i])
-
-        #compute transitions:
-        xi_ = np.zeros((N,numclasses,numclasses))
-        for j in range(numclasses):
-            for k in range(numclasses):
-                xi_[1:,j,k] = alphas[:-1,j]*transmat_[j,k]*Y[1:,k]*betas[1:,k]
-        xi_ /= np.sum(xi_,axis=(1,2))[:,None,None]
-
-        #update transmat_
-        for k in range(numclasses):
-            transmat_[:,k] = np.sum(xi_[1:,:,k],axis=0)/np.sum(gamma_[:-1],axis=0)
-        stationary_probs_ = gamma_[0]
-        for k in range(numclasses):
-            transmat_[k] /= np.sum(transmat_[k])
-            
-        for k in range(numclasses):
-            for iter_ in range(50):
-                stationary_probs_ = np.einsum('i,ij', stationary_probs_, transmat_)
-    
-    return transmat_,stationary_probs_
-
-#Main function used to test markovianity of each motif. 
-def test_for_markovianity(Y,w_dict,eps,p_d,transmat_, stationary_probs_):
-    lengths = [len(w) for w in w_dict]
-    lmean = np.mean(lengths)
-    mlnPs = np.zeros(len(w_dict))
-    emps =  np.zeros(len(w_dict))
-    exps =  np.zeros(len(w_dict))
-    for i,w in enumerate(w_dict):
-        seqs,probs = get_mutated_sequences_prob(list(w),eps,p_d)
-        emp = 0
-        exp = 0
-        for j,seq in enumerate(seqs):
-            seq_arr = np.array(seq,dtype = int)
-            #print(w,seq_arr,probs[i])
-            emp += calculate_empirical_frequency_hmm(seq_arr,Y,transmat_, stationary_probs_)*probs[j]
-            exp += calculate_expected_frequency_hmm(seq_arr,transmat_, stationary_probs_)*probs[j]
-
-        q1 = 1 + (1.0/exp + 1.0/(1-exp) - 1)/(6.0*len(Y)) #correction to LR test
-        ll = 2*len(Y)*(emp*np.log(emp/exp) + (1-emp)*np.log((1-emp)/(1-exp)))/q1
-        mlnP = -np.log10(stats.chi2.sf(ll,1))
-        mlnPs[i] = mlnP
-        emps[i] = emp
-        exps[i] = exp
-        #print("%04d %04d %2.2f"%(int(emp*len(Y)),int(exp*len(Y)),mlnP),w)
-    sorted_ = np.argsort(-mlnPs)
-    for w in sorted_:
-        if emps[w] > exps[w] and 10**(-mlnPs[w]) < 1e-3:
-            print("%04d %04d %2.2f"%(int(emps[w]*len(Y)),int(exps[w]*len(Y)),mlnPs[w]),w_dict[w])
-    return mlnPs,emps,exps
-
-#Print dictionary
-def print_dict(Y,w_dict,P_w):
-    sorted_ = np.argsort(-P_w)
-    lengths = [len(w) for w in w_dict]
-    lmean = np.mean(lengths)
-    for i in sorted_[:]:
-        print("%.4f %d"%(P_w[i],int(P_w[i]*len(Y)/lmean)),w_dict[i])
-
-#Combine two dictionaries:
-def combine_dicts(w_dict1, w_dict2, params, model):
-    w_dict = w_dict1 + w_dict2
-    eps = params[0]
-    params[0] = 0
-    P_w = []
-    w_dict = remove_duplicates_w_dict(P_w,w_dict,params,model)
-    return w_dict
-
-#Compare the number of occurrences of each motif in two datasets. The model of course has to be the same for both datasets.     
-def compare_datasets(Y1, lengths_Y1, Y2, lengths_Y2,  w_dict1, w_dict2, params,model):
-    w_dict = combine_dicts(w_dict1,w_dict2,params,model)
-    P_w1 = get_P_w(Y1,lengths_Y1,w_dict,params)
-    P_w2 = get_P_w(Y2,lengths_Y2,w_dict,params)
-    lengths = [len(w) for w in w_dict]
-    lmean = np.sum(P_w2*lengths)
-    N_av2 = len(Y2)/lmean
-    scores = np.zeros(len(w_dict))
-    print(len(w_dict), len(w_dict1), len(w_dict2))
-    emps = np.zeros(len(w_dict))
-    exps = np.zeros(len(w_dict))
-    for w in range(len(w_dict)):
-        f_calc = P_w2[w]
-        f_exp =  P_w1[w]
-        q1 = 1 + (1.0/f_exp + 1.0/(1-f_exp) - 1)/(6.0*N_av2) #correction to LR test
-        m2lnLR = 2*N_av2*(f_calc*np.log(f_calc/f_exp) + (1-f_calc)*np.log((1-f_calc)/(1-f_exp)))
-        scores[w] = -np.log10(stats.chi2.sf(m2lnLR,1))
-        emps[w] = f_calc*N_av2
-        exps[w] = f_exp*N_av2
-        
-    sorted_ = np.argsort(-scores)
-    for w in sorted_:
-        if P_w2[w] > P_w1[w] and N_av2*P_w2[w] > 10 and len(w_dict[w]) > 1 and 10**(-scores[w]) < 1e-2 and N_av2*P_w1[w] > 5:
-            print( "%04d %04d %.2f" %(int(N_av2*P_w1[w]),int(N_av2*P_w2[w]), scores[w]),w_dict[w])
-    return scores,emps,exps
-    
-
 

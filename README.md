@@ -5,7 +5,7 @@ This repository contains all the code for the implementation of the motif discov
 
 This repository allows you to run BASS on your own dataset. In order to reproduce the results from the paper please refer to the the [original repository](https://github.com/greddy992/BASS)
 
-For questions, email gautam_nallamalaATfas.harvard.edu and gautam.sridhar@icm-institute.org
+For questions, email gautam_nallamala(AT)fas.harvard.edu and gautam.sridhar(AT)icm-institute.org
 
 ## Requirements:
 Python3, 

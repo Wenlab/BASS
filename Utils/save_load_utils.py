@@ -128,7 +128,7 @@ def load_results_raw(args, condition):
     Load raw BASS results
     """
 
-    save_path = args.Out + args.Exp + 'condition_{}'.format(condition)
+    save_path = args.Out + args.Exp + '_condition_{}'.format(condition)
 
     infile = open(save_path + '/BASSresults','rb')
     results = pickle.load(infile)

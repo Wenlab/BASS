@@ -5,12 +5,16 @@
 #To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative Commons, 
 #PO Box 1866, Mountain View, CA 94042, USA.
 
+import os
+import sys
+sys.path.append('./BASS/')
+sys.path.append('./Utils/')
+import argparse
 import bass as md
+from GMM import GMM_model
 import comparisons as cp
 import numpy as np
 import pandas as pd
-import os
-import sys
 from save_load_utils import *
 
 def main(args):
@@ -19,16 +23,16 @@ def main(args):
 
     # load data
 
-    data_null = args.pathData + 'data_condition{}'.format(args.Condition1)
-    lengths_null = args.pathData + 'lengths_condition{}'.format(args.Condition1)
+    data_null = np.load(args.PathData + 'data_condition{}.npy'.format(args.Condition1))
+    lengths_null = np.load(args.PathData + 'lengths_condition{}.npy'.format(args.Condition1))
     
-    data_hyp = args.pathData + 'data_condition{}'.format(args.Condition2)
-    lengths_hyp = args.pathData + 'lengths_condition{}'.format(args.Condition2)
+    data_hyp = np.load(args.PathData + 'data_condition{}.npy'.format(args.Condition2))
+    lengths_hyp = np.load(args.PathData + 'lengths_condition{}.npy'.format(args.Condition2))
 
     # load GMM 
-    means_ = np.load(args.PathGMM + savename + "_means.npy")
-    covars_ = np.load(args.PathGMM + savename + "_covars.npy")
-    weights_ = np.load(args.PathGMM + savename + "_weights.npy")
+    means_ = np.load(args.PathGMM + args.Savename + '_means.npy')
+    covars_ = np.load(args.PathGMM + args.Savename + '_covars.npy')
+    weights_ = np.load(args.PathGMM + args.Savename + '_weights.npy')
 
     model_fit = GMM_model(len(means_))
     model_fit._read_params(means_,covars_,weights_)
@@ -140,7 +144,7 @@ if __name__ == "__main__":
     parser.add_argument('-condition1','--Condition1', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
     parser.add_argument('-condition2','--Condition2', help="Second Condition/experiment to use as the test case", default=1,type=int)
     parser.add_argument('-pathData','--PathData',help="path to data",default='/Users/gautam.sridhar/Documents/Repos/BASS/Data/',type=str)
-    parser.add_argument('-pathGMM','--PathGMM', help="path to GMM", default='/Users/gautam.sridhar/Dcouments/Repos/BASS/GMM/', type=str)
+    parser.add_argument('-pathGMM','--PathGMM', help="path to GMM", default='/Users/gautam.sridhar/Documents/Repos/BASS/GMM/', type=str)
     parser.add_argument('-savename','--Savename',help="name of gmm to save/load", default="acid",type=str)
     parser.add_argument('-exp','--Exp',help="name of the experiment to save as", default="pHtaxis",type=str)
     parser.add_argument('-out','--Out',help="path save",default='/Users/gautam.sridhar/Documents/Repos/BASS/Results/',type=str)

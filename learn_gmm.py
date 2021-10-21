@@ -13,7 +13,8 @@
 
 import argparse
 import sys
-sys.path.append('./utils/')
+sys.path.append('./BASS/')
+sys.path.append('./Utils/')
 import os
 import time
 #data format library

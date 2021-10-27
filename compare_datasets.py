@@ -37,9 +37,13 @@ def main(args):
     model_fit = GMM_model(len(means_))
     model_fit._read_params(means_,covars_,weights_)
 
-    #Add names for each bout types
-    class_names = ['1','2','3','4','5','6','7']
-    
+    #Read names for each cluster types
+    ffile = open(args.PathData + args.DataName + '_class_names.txt', "r")
+    content = ffile.read()
+    content_list = content.split(",")
+    ffile.close() 
+    class_names = [x.strip('\n') for x in content_list]
+
     lengths_null = lengths_null[:]
     data_null = data_null[:np.sum(lengths_null)]
 

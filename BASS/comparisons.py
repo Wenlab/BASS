@@ -89,7 +89,7 @@ def test_for_markovianity(Y,w_dict,eps,p_d,transmat_, stationary_probs_):
     emps =  np.zeros(len(w_dict))
     exps =  np.zeros(len(w_dict))
     for i,w in enumerate(w_dict):
-        seqs,probs = get_mutated_sequences_prob(list(w),eps,p_d)
+        seqs,probs = md.get_mutated_sequences_prob(list(w),eps,p_d)
         emp = 0
         exp = 0
         for j,seq in enumerate(seqs):
@@ -129,7 +129,7 @@ def combine_dicts(w_dict1, w_dict2, params, model):
     eps = params[0]
     params[0] = 0
     P_w = []
-    w_dict = remove_duplicates_w_dict(P_w,w_dict,params,model)
+    w_dict = md.remove_duplicates_w_dict(P_w,w_dict,params,model)
     return w_dict
 
 def compare_datasets(Y1, lengths_Y1, Y2, lengths_Y2,  w_dict1, w_dict2, params,model):
@@ -137,8 +137,8 @@ def compare_datasets(Y1, lengths_Y1, Y2, lengths_Y2,  w_dict1, w_dict2, params,m
     Compare the number of occurrences of each motif in two datasets. The model of course has to be the same for both datasets.     
     """
     w_dict = combine_dicts(w_dict1,w_dict2,params,model)
-    P_w1 = get_P_w(Y1,lengths_Y1,w_dict,params)
-    P_w2 = get_P_w(Y2,lengths_Y2,w_dict,params)
+    P_w1 = md.get_P_w(Y1,lengths_Y1,w_dict,params)
+    P_w2 = md.get_P_w(Y2,lengths_Y2,w_dict,params)
     lengths = [len(w) for w in w_dict]
     lmean = np.sum(P_w2*lengths)
     N_av2 = len(Y2)/lmean

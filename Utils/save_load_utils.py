@@ -7,6 +7,7 @@
 
 import numpy as np
 import pandas as pd
+import pickle
 import os
 import sys
 
@@ -23,11 +24,11 @@ def save_results_raw(args, P_dict, num_instances, w_dict):
     w_dict: the motifs output by BASS in numerical form
     """
 
-    save_path = args.Out + args.Exp + '_condition_{}'.format(args.Condition)
+    save_path = args.Out + args.DataName +'/'+ args.Exp + '_condition_{}'.format(args.Condition)
     if not(os.path.exists(save_path)):
-        os.mkdir(save_path)
+        os.makedirs(save_path)
     outfile = open(save_path + '/BASSresults','wb')
-    pickle.dump([P_w, num_instances, w_dict],outfile)
+    pickle.dump([P_dict, num_instances, w_dict],outfile)
     outfile.close()
 
 
@@ -43,9 +44,9 @@ def save_results_classnames(args, P_dict, num_instances, w_dict, class_names):
     class_names: the associated names of the bout types`
     """
 
-    save_path = args.Out + args.Exp + '_condition_{}'.format(args.Condition)
+    save_path = args.Out + args.DataName +'/' + args.Exp + '_condition_{}'.format(args.Condition)
     if not(os.path.exists(save_path)):
-        os.mkdir(save_path)
+        os.makedirs(save_path)
     motifs = []
     for i, w in enumerate(w_dict):
         motif = [class_names[a] for a in w]
@@ -55,7 +56,7 @@ def save_results_classnames(args, P_dict, num_instances, w_dict, class_names):
     full_dict.to_csv(path_or_buf = save_path + '/BASS_dictionary.csv', index = False)
 
 
-def save_markovianity(args, w_dict, neg_log_p, empirial_freq, expected_freq, class_names):
+def save_markovianity(args, w_dict, neg_log_p, empirical_freq, expected_freq, class_names):
     """
     Save the results of the comparison to an HMM on the bout types
 
@@ -67,18 +68,18 @@ def save_markovianity(args, w_dict, neg_log_p, empirial_freq, expected_freq, cla
     expected_freq: Expected frequency of motifs predicted by an HMM
     """
     
-    save_path = args.Out + args.Exp + '_condition_{}'.format(args.Condition)
+    save_path = args.Out + args.DataName +'/' + args.Exp + '_condition_{}'.format(args.Condition)
     if not(os.path.exists(save_path)):
-        os.mkdir(save_path)
+        os.makedirs(save_path)
 
     tostore_nlp = []
     tostore_emp = []
     tostore_exp = []
 
-    motifs - []
-    idx = np.argsort(-mlnPs)
-    for w in sorted_:
-        if empirical_freq[w] > expected_freq[w] and 10**(-mlnPs[w]) < 1: #used to be 1e-3 not 1
+    motifs = []
+    idx = np.argsort(-neg_log_p)
+    for w in idx[:]:
+        if empirical_freq[w] > expected_freq[w] and 10**(-neg_log_p[w]) < 1: #used to be 1e-3 not 1
             tostore_nlp.append(neg_log_p[w])
             tostore_emp.append(empirical_freq[w])
             tostore_exp.append(expected_freq[w])
@@ -114,13 +115,13 @@ def save_decoded(args, w_MLs, words, ls):
     words_out = np.array(words_out)
     lengths_out = np.array(lengths_out)
 
-    save_path = args.Out + args.Exp + '_condition_{}'.format(condition)
+    save_path = args.Out +args.DataName + '/' +  args.Exp + '_condition_{}'.format(args.Condition)
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    np.save(save_path + "seg_bouttypes",chars_out)
-    np.save(save_path + "seg_words",words_out)
-    np.save(save_path + "seg_lengths",lengths_out)
+    np.save(save_path + "_seg_bouttypes",chars_out)
+    np.save(save_path + "_seg_words",words_out)
+    np.save(save_path + "_seg_lengths",lengths_out)
 
 
 def load_results_raw(args, condition):
@@ -128,7 +129,7 @@ def load_results_raw(args, condition):
     Load raw BASS results
     """
 
-    save_path = args.Out + args.Exp + '_condition_{}'.format(condition)
+    save_path = args.Out +args.DataName + '/' + args.Exp + '_condition_{}'.format(condition)
 
     infile = open(save_path + '/BASSresults','rb')
     results = pickle.load(infile)

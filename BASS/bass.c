@@ -8508,16 +8508,16 @@ static PyObject *__pyx_pf_4bass_20get_W_ils(CYTHON_UNUSED PyObject *__pyx_self, 
   /* "bass.pyx":262
  *     cdef double [:] Pmtilds
  *     cdef np.int_t [:] seq_mtild
- *     cdef double w_thr = params[4]             # <<<<<<<<<<<<<<
+ *     cdef double w_thr = params[3]             # <<<<<<<<<<<<<<
  *     cdef double w_thr_l = 0
  *     W_ils = []
  */
-  __pyx_t_9 = 4;
+  __pyx_t_9 = 3;
   __pyx_v_w_thr = (*((double *) ( /* dim=0 */ (__pyx_v_params.data + __pyx_t_9 * __pyx_v_params.strides[0]) )));
 
   /* "bass.pyx":263
  *     cdef np.int_t [:] seq_mtild
- *     cdef double w_thr = params[4]
+ *     cdef double w_thr = params[3]
  *     cdef double w_thr_l = 0             # <<<<<<<<<<<<<<
  *     W_ils = []
  * 
@@ -8525,7 +8525,7 @@ static PyObject *__pyx_pf_4bass_20get_W_ils(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_v_w_thr_l = 0.0;
 
   /* "bass.pyx":264
- *     cdef double w_thr = params[4]
+ *     cdef double w_thr = params[3]
  *     cdef double w_thr_l = 0
  *     W_ils = []             # <<<<<<<<<<<<<<
  * 
@@ -13517,11 +13517,11 @@ static PyObject *__pyx_pf_4bass_44convert_Y_to_Y_Ps(CYTHON_UNUSED PyObject *__py
   /* "bass.pyx":489
  *     Convert a data vector Y to a sequence of probability vectors q(Y_i|c_j).
  *     """
- *     Sigma = int(params[7])             # <<<<<<<<<<<<<<
+ *     Sigma = int(params[5])             # <<<<<<<<<<<<<<
  *     Y_Ps = np.zeros((len(Y),Sigma),dtype = float)
  *     for i in range(len(Y)):
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 7, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 489, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 5, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 489, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = __Pyx_PyNumber_Int(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 489, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -13531,7 +13531,7 @@ static PyObject *__pyx_pf_4bass_44convert_Y_to_Y_Ps(CYTHON_UNUSED PyObject *__py
 
   /* "bass.pyx":490
  *     """
- *     Sigma = int(params[7])
+ *     Sigma = int(params[5])
  *     Y_Ps = np.zeros((len(Y),Sigma),dtype = float)             # <<<<<<<<<<<<<<
  *     for i in range(len(Y)):
  *         for s in range(Sigma):
@@ -13569,7 +13569,7 @@ static PyObject *__pyx_pf_4bass_44convert_Y_to_Y_Ps(CYTHON_UNUSED PyObject *__py
   __pyx_t_5 = 0;
 
   /* "bass.pyx":491
- *     Sigma = int(params[7])
+ *     Sigma = int(params[5])
  *     Y_Ps = np.zeros((len(Y),Sigma),dtype = float)
  *     for i in range(len(Y)):             # <<<<<<<<<<<<<<
  *         for s in range(Sigma):
@@ -23543,7 +23543,7 @@ static PyObject *__pyx_pf_4bass_76remove_duplicates_w_dict(CYTHON_UNUSED PyObjec
  *     dups = []
  *     if eps > 1e-3:             # <<<<<<<<<<<<<<
  *         JS = get_JS(w_dict,params,model)
- *         Jthr = params[6]
+ *         Jthr = params[4]
  */
   __pyx_t_1 = PyObject_RichCompare(__pyx_v_eps, __pyx_float_1eneg_3, Py_GT); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 858, __pyx_L1_error)
   __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 858, __pyx_L1_error)
@@ -23554,7 +23554,7 @@ static PyObject *__pyx_pf_4bass_76remove_duplicates_w_dict(CYTHON_UNUSED PyObjec
  *     dups = []
  *     if eps > 1e-3:
  *         JS = get_JS(w_dict,params,model)             # <<<<<<<<<<<<<<
- *         Jthr = params[6]
+ *         Jthr = params[4]
  *         P_w_weighted = np.sum((JS < Jthr)*P_w,axis=1)
  */
     __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_get_JS); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 859, __pyx_L1_error)
@@ -23613,18 +23613,18 @@ static PyObject *__pyx_pf_4bass_76remove_duplicates_w_dict(CYTHON_UNUSED PyObjec
     /* "bass.pyx":860
  *     if eps > 1e-3:
  *         JS = get_JS(w_dict,params,model)
- *         Jthr = params[6]             # <<<<<<<<<<<<<<
+ *         Jthr = params[4]             # <<<<<<<<<<<<<<
  *         P_w_weighted = np.sum((JS < Jthr)*P_w,axis=1)
  * 
  */
-    __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 6, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 860, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 4, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 860, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_v_Jthr = __pyx_t_1;
     __pyx_t_1 = 0;
 
     /* "bass.pyx":861
  *         JS = get_JS(w_dict,params,model)
- *         Jthr = params[6]
+ *         Jthr = params[4]
  *         P_w_weighted = np.sum((JS < Jthr)*P_w,axis=1)             # <<<<<<<<<<<<<<
  * 
  *         for i in range(len(w_dict)):#Remove duplicates
@@ -23935,7 +23935,7 @@ static PyObject *__pyx_pf_4bass_76remove_duplicates_w_dict(CYTHON_UNUSED PyObjec
  *     dups = []
  *     if eps > 1e-3:             # <<<<<<<<<<<<<<
  *         JS = get_JS(w_dict,params,model)
- *         Jthr = params[6]
+ *         Jthr = params[4]
  */
     goto __pyx_L3;
   }
@@ -26221,7 +26221,7 @@ static PyObject *__pyx_pf_4bass_84get_words_to_add(CYTHON_UNUSED PyObject *__pyx
  *     R = evaluate_R(Q)
  *     R1 = evaluate_R1(Q)             # <<<<<<<<<<<<<<
  *     G = evaluate_G(R,R1,lmax)
- *     w_thr = params[4]
+ *     w_thr = params[3]
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_evaluate_R1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 957, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -26247,7 +26247,7 @@ static PyObject *__pyx_pf_4bass_84get_words_to_add(CYTHON_UNUSED PyObject *__pyx
  *     R = evaluate_R(Q)
  *     R1 = evaluate_R1(Q)
  *     G = evaluate_G(R,R1,lmax)             # <<<<<<<<<<<<<<
- *     w_thr = params[4]
+ *     w_thr = params[3]
  *     lmean = np.sum(P_w*lengths)
  */
   __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_evaluate_G); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 958, __pyx_L1_error)
@@ -26306,18 +26306,18 @@ static PyObject *__pyx_pf_4bass_84get_words_to_add(CYTHON_UNUSED PyObject *__pyx
   /* "bass.pyx":959
  *     R1 = evaluate_R1(Q)
  *     G = evaluate_G(R,R1,lmax)
- *     w_thr = params[4]             # <<<<<<<<<<<<<<
+ *     w_thr = params[3]             # <<<<<<<<<<<<<<
  *     lmean = np.sum(P_w*lengths)
  *     for ibeta in range(len(w_dict)):
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 4, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 959, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 959, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_w_thr = __pyx_t_1;
   __pyx_t_1 = 0;
 
   /* "bass.pyx":960
  *     G = evaluate_G(R,R1,lmax)
- *     w_thr = params[4]
+ *     w_thr = params[3]
  *     lmean = np.sum(P_w*lengths)             # <<<<<<<<<<<<<<
  *     for ibeta in range(len(w_dict)):
  *         lmin,lmax = get_lmin_and_max(w_dict[ibeta],params)
@@ -26349,7 +26349,7 @@ static PyObject *__pyx_pf_4bass_84get_words_to_add(CYTHON_UNUSED PyObject *__pyx
   __pyx_t_1 = 0;
 
   /* "bass.pyx":961
- *     w_thr = params[4]
+ *     w_thr = params[3]
  *     lmean = np.sum(P_w*lengths)
  *     for ibeta in range(len(w_dict)):             # <<<<<<<<<<<<<<
  *         lmin,lmax = get_lmin_and_max(w_dict[ibeta],params)
@@ -27993,7 +27993,7 @@ static PyObject *__pyx_pf_4bass_90solve_dictionary(CYTHON_UNUSED PyObject *__pyx
  * 
  *     w_dict = []             # <<<<<<<<<<<<<<
  *     Sigma = Y.shape[1]
- *     params[7] = Sigma
+ *     params[5] = Sigma
  */
   __pyx_t_4 = PyList_New(0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1015, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
@@ -28004,7 +28004,7 @@ static PyObject *__pyx_pf_4bass_90solve_dictionary(CYTHON_UNUSED PyObject *__pyx
  * 
  *     w_dict = []
  *     Sigma = Y.shape[1]             # <<<<<<<<<<<<<<
- *     params[7] = Sigma
+ *     params[5] = Sigma
  * 
  */
   __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_v_Y, __pyx_n_s_shape); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 1016, __pyx_L1_error)
@@ -28018,14 +28018,14 @@ static PyObject *__pyx_pf_4bass_90solve_dictionary(CYTHON_UNUSED PyObject *__pyx
   /* "bass.pyx":1017
  *     w_dict = []
  *     Sigma = Y.shape[1]
- *     params[7] = Sigma             # <<<<<<<<<<<<<<
+ *     params[5] = Sigma             # <<<<<<<<<<<<<<
  * 
  *     for i in range(Sigma):
  */
-  if (unlikely(__Pyx_SetItemInt(__pyx_v_params, 7, __pyx_v_Sigma, long, 1, __Pyx_PyInt_From_long, 0, 0, 1) < 0)) __PYX_ERR(0, 1017, __pyx_L1_error)
+  if (unlikely(__Pyx_SetItemInt(__pyx_v_params, 5, __pyx_v_Sigma, long, 1, __Pyx_PyInt_From_long, 0, 0, 1) < 0)) __PYX_ERR(0, 1017, __pyx_L1_error)
 
   /* "bass.pyx":1019
- *     params[7] = Sigma
+ *     params[5] = Sigma
  * 
  *     for i in range(Sigma):             # <<<<<<<<<<<<<<
  *         w_dict += [np.array([i], dtype = int)]
@@ -28118,7 +28118,7 @@ static PyObject *__pyx_pf_4bass_90solve_dictionary(CYTHON_UNUSED PyObject *__pyx
     __pyx_t_9 = 0;
 
     /* "bass.pyx":1019
- *     params[7] = Sigma
+ *     params[5] = Sigma
  * 
  *     for i in range(Sigma):             # <<<<<<<<<<<<<<
  *         w_dict += [np.array([i], dtype = int)]

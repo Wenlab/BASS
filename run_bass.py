@@ -25,19 +25,19 @@ def main(args):
 
     # load data
 
-    data = np.load(args.PathData + 'data_condition{}.npy'.format(args.Condition))
-    lengths = np.oad(args.PathData + 'lengths_condition{}.npy'.format(args.Condition))
+    data = np.load(args.PathData + args.DataName + '_dataset_condition{}.npy'.format(args.Condition))
+    lengths = np.load(args.PathData + args.DataName +'_lengths_condition{}.npy'.format(args.Condition))
 
     # load GMM 
-    means_ = np.load(args.PathGMM + srgs.Savename + "_means.npy")
-    covars_ = np.load(args.PathGMM + args.Savename + "_covars.npy")
-    weights_ = np.load(args.PathGMM + args.Savename + "_weights.npy")
+    means_ = np.load(args.PathGMM + args.GMMName + "_means.npy")
+    covars_ = np.load(args.PathGMM + args.GMMName + "_covars.npy")
+    weights_ = np.load(args.PathGMM + args.GMMName + "_weights.npy")
 
     model_fit = GMM_model(len(means_))
     model_fit._read_params(means_,covars_,weights_)
 
     #Add names for each bout types
-    class_names = ['']
+    class_names = ['1','2','3','4','5','6','7']
     
     lengths_flat = lengths[:]
     data_flat = data[:np.sum(lengths_flat)]
@@ -46,16 +46,16 @@ def main(args):
     H = -model_fit.score(data_flat,args.Condition)/len(data_flat) #entropy
     Y = np.exp(model_fit._compute_log_likelihood(data_flat))/np.exp(-H)
 
-    w_thr = 1e-4
     eps  = 0.1
     p_d  = 0.2
     p_ins = 0.2
-    mu = 1.0
-    H_beta_fac = 0
+    #mu = 1.0
+    w_thr = 1e-4
+    #H_beta_fac = 0
     Jthr = 0.15
     Sigma = Y.shape[1]
-    std = 0.05
-    params = np.array([eps,p_d,p_ins, mu, w_thr,H_beta_fac, Jthr, Sigma, std], dtype =float)
+    #std = 0.05
+    params = np.array([eps,p_d,p_ins, w_thr, Jthr, Sigma], dtype =float)
 
     # Solve for dictionary
     P_dict, w_dict = md.solve_dictionary(Y,lengths_flat,params,model_fit,7)
@@ -75,7 +75,7 @@ def main(args):
     save_results_raw(args, P_dict_sorted, num_instances, w_dict_sorted)
     save_results_classnames(args, P_dict_sorted, num_instances, w_dict_sorted, class_names)
 
-    transmat_, stationary_probs_ = md.compute_transmat(Y)
+    transmat_, stationary_probs_ = cp.compute_transmat(Y)
     neg_log_p, empirical_freq, expected_freq = cp.test_for_markovianity(Y,w_dict,eps,p_d,transmat_, stationary_probs_)
 
     save_markovianity(args, w_dict, neg_log_p, empirical_freq, expected_freq, class_names)
@@ -83,12 +83,13 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-seed','--Seed',help="Seed for data extraction", default=42,type=int)
-    parser.add_argument('-condition','--Condition', help="Condition/experiment to run BASS on",default=0 ,type=int)
-    parser.add_argument('-pathData','--PathData',help="path to data",default='/Users/gautam.sridhar/Documents/Repos/BASS/Data/',type=str)
-    parser.add_argument('-pathGMM','--PathGMM', help="path to GMM", default='/Users/gautam.sridhar/Documents/Repos/BASS/GMM/', type=str)
-    parser.add_argument('-savename','--Savename',help="name of gmm to save/load", default="acid",type=str)
-    parser.add_argument('-exp','--Exp',help="name of the experiment to save as", default="pHtaxis",type=str)
-    parser.add_argument('-out','--Out',help="path save",default='/Users/gautam.sridhar/Documents/Repos/BASS/Results/',type=str)
+    parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
+    parser.add_argument('-c','--Condition', help="Condition/experiment to run BASS on",default=0 ,type=int)
+    parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
+    parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
+    parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)
+    parser.add_argument('-gN','--GMMName',help="name of gmm to save/load", default="toy",type=str)
+    parser.add_argument('-x','--Exp',help="name of the experiment to save as", default="toy",type=str)
+    parser.add_argument('-o','--Out',help="path to save BASS results",default='./Results/',type=str)
     args = parser.parse_args()
     main(args)

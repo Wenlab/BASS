@@ -6,8 +6,8 @@
 #PO Box 1866, Mountain View, CA 94042, USA.
 
 # Use as example script to learn the parameters of the gmm and to visualize the bout types and their kinematics
-# Datasets of multiple conditions should be of size nbouts x nfeatures
-# In addition storing the tail angles can be useful in order to visualize the bout types found
+# Datasets of each condition should be of size nbouts x nfeatures
+# In addition storing the features, the tail angles can be useful in order to visualize the bout types found
 # Recfactoring analyze_kinematics() to suit specific datasets can help with the visualization of the bout types 
 
 
@@ -23,11 +23,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 #data processing functions
-import data_processing_zz as dp
 from GMM import GMM_model
 
 
-def train(args, datasets, n_cluster,split_size=40000, savename="acid", mode = 'learn'):
+def train(args, datasets, n_cluster):
     """
     Learn a GMM on datasets with a set number of clusters and save the parameters:
 
@@ -36,13 +35,12 @@ def train(args, datasets, n_cluster,split_size=40000, savename="acid", mode = 'l
     datasets: A list of datasets over which to learn GMM. Size of list should be number of conditions/experiments
               Each dataset in the list should be num_bouts x n_features..
     n_cluster: Chosen number of clusters. default type - int
-    savename: Name of the parameters to be saved/loaded
-    mode: If 'learn' then train the GMM on the dataset, if 'load' then load a previously saved model.
     """
 
     model_fit = GMM_model(n_cluster) 
-    if mode == 'learn':
+    if args.Load == False:
         length_min = np.min([len(data) for data in datasets])
+        split_size = int((2/3)*length_min)                                         # 60% train/val split
         datasets_train = np.zeros((len(datasets),split_size,datasets[0].shape[1])) # 3d array for subsampled dataset
 
         for s in range(len(datasets)):
@@ -50,20 +48,25 @@ def train(args, datasets, n_cluster,split_size=40000, savename="acid", mode = 'l
             datasets_train[s] = datasets[s][subsample]
 
         model_fit.solve(datasets_train)
-        model_fit._save_params(args.Out + savename)
+        model_fit._save_params(args.PathGMM + args.GMMName)
 
         return model_fit
 
-    elif mode == 'load':
-        means_ = np.load(args.Out + savename + "_means.npy")
-        covars_ = np.load(args.Out + savename + "_covars.npy")
-        weights_ = np.load(args.Out + savename + "_weights.npy")
+    elif args.Load == True:
+        
+        if os.path.exists(args.PathGMM) is not True:
+            print('Path to GMM ' + args.PathData + ' does not exist, folders created')
+            exit()
+
+        means_ = np.load(args.PathGMM + args.GMMName + "_means.npy")
+        covars_ = np.load(args.PathGMM + args.GMMName + "_covars.npy")
+        weights_ = np.load(args.PathGMM + args.GMMName + "_weights.npy")
         model_fit._read_params(means_,covars_,weights_)
 
         return model_fit
 
 
-def val(args, datasets,clusters,split_size,n_reps):
+def val(args, datasets,clusters,n_reps):
     """
     Train a Gaussian Mixture models and plot the log likelihood for selected range of clusters in order to select the number of clusters
 
@@ -72,7 +75,6 @@ def val(args, datasets,clusters,split_size,n_reps):
     datasets: A list of datasets over which to learn GMM. Size of list should be number of conditions/experiments
               Each dataset in the list should be num_bouts x n_features.
     clusters: a list/numpy array of the range of clusters to test upon
-    split_size: the number of training samples to choose in your dataset
     n_reps: Number of repititions to perform for error bars
     """
 
@@ -85,7 +87,7 @@ def val(args, datasets,clusters,split_size,n_reps):
             print('iter = ', j)
             model_fit = GMM_model(i)
             length_min = np.min([len(data) for data in datasets])
-
+            split_size = int((2/3)*length_min)                                         # 60% train/val split
             datasets_train = np.zeros((len(datasets),split_size,datasets[0].shape[1])) # 3d array for subsampled dataset
             datasets_test = np.zeros((len(datasets),length_min - split_size,datasets[0].shape[1]))
             
@@ -112,7 +114,7 @@ def val(args, datasets,clusters,split_size,n_reps):
     axis.set_xlabel("Number of clusters", fontsize = 18)
     axis.set_ylabel("Held-out log likelihood", fontsize = 18)
     fig.tight_layout()
-    plt.savefig(args.Out + "figure_heldout_LL.png")
+    plt.savefig(args.PathGMM + args.GMMName +  "_figure_heldout_LL.png")
 
 
 def analyze_kinematics(args, datasets, tail_angles ,model_fit):
@@ -178,7 +180,7 @@ def analyze_kinematics(args, datasets, tail_angles ,model_fit):
         ax.set_xlabel("Time (ms)", fontsize = 20)
         ax.set_ylabel(r"Tail angle($^o$)", fontsize = 20)
         fg.tight_layout()
-        fg.savefig(args.Out + "figure_tailangles_clusters_tailanglespca_kin_{}_condition{}.png".format(state,args.Condition))
+        fg.savefig(args.PathGMM + args.GMMName +"_figure_tailangles_clusters_tailanglespca_kin_{}_condition{}.png".format(state,args.Condition))
         print(np.mean(speeds[state]),np.mean(deltaheads[state]), model_fit.weights_[:,state])
 
     axis1.tick_params(labelsize = 24)
@@ -199,8 +201,8 @@ def analyze_kinematics(args, datasets, tail_angles ,model_fit):
     axis2.set_ylabel("PDF",fontsize = 24)
     fig2.tight_layout()
 
-    fig1.savefig(args.Out + "speed_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
-    fig2.savefig(args.Out + "deltahead_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
+    fig1.savefig(args.PathGMM + args.GMMName  +"_speed_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
+    fig2.savefig(args.PathGMM + args.GMMName  +"_deltahead_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
 
 
 def main(args):
@@ -208,35 +210,39 @@ def main(args):
     datasets = []
     tail_angles = []
 
-    datapath = args.Dataout + "data_"
-    tapath = args.Dataout + "tailangles_"
+    if os.path.exists(args.PathData):
+        datapath = args.PathData + args.DataName + "_dataset_"
+    else:
+        print('Path to data ' + args.PathData + ' does not exist')
+        exit()
 
-    for n in range(args.Numdata):
+    for n in args.Condition:
         datasets.append(np.load(datapath + "condition{}.npy".format(n)))
-        tail_angles.append(np.load(tapath + "condition{}.npy".format(n)))
-
+        if args.Kinematics == True:        
+            tapath = args.PathData + args.DataName+ "_tailangles_"
+            tail_angles.append(np.load(tapath + "condition{}.npy".format(n)))
     if args.Type == 'train' :
-        model_fit = train(args, datasets, args.N_cluster, split_size=40000, savename = args.Savename, mode = args.Mode)
-
-        # Comment out if using a dataset not extracted using Zebrazoom
-        analyze_kinematics(args, datasets, tail_angles, model_fit)
+        model_fit = train(args, datasets, args.N_cluster)
+        if args.Kinematics == True:
+            analyze_kinematics(args, datasets, tail_angles, model_fit)
 
     elif args.Type ==  'val':
         clusters = np.arange(3,11)
-        val(args, datasets, clusters, split_size=40000, n_reps=5)
+        val(args, datasets, clusters, n_reps=5)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-seed','--Seed',help="Seed for data extraction", default=42,type=int)
-    parser.add_argument('-numdata','--Numdata',help="Number of datasets to learn the gmm on", default=2, type=int)
-    parser.add_argument('-n_cluster','--N_cluster',help="If train, set the number of clusters", default=7, type=int)
-    parser.add_argument('-condition','--Condition',help= "type of experiment to run/analyze", default=0, type=int)
-    parser.add_argument('-type','--Type',help="whether to train or val", default='train', type=str)
-    parser.add_argument('-mode','--Mode',help="if train is true, then whether to learn the gmm or load it", default='load',type=str)
-    parser.add_argument('-dataout','--Dataout',help="path to data",default='/Users/gautam.sridhar/Documents/Repos/BASS/Data/',type=str)
-    parser.add_argument('-savename','--Savename',help="name of gmm to save/load", default="acid",type=str)
-    parser.add_argument('-out','--Out',help="path to save",default='/Users/gautam.sridhar/Documents/Repos/BASS/GMM/',type=str)
+    parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
+    parser.add_argument('-t','--Type',help="whether to train or val", default='train', type=str)
+    parser.add_argument('-c','--Condition',nargs='+',help= "types of experiment to run/analyze", type=int)
+    parser.add_argument('-n','--N_cluster',help="If train, set the number of clusters", default=7, type=int)
+    parser.add_argument('-k','--Kinematics',help="Analyze kinematics, if available",  action='store_true')
+    parser.add_argument('-l','--Load',help="During training, whether to load a previously saved GMM or learn it",action='store_true')
+    parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
+    parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
+    parser.add_argument('-pG','--PathGMM',help="path to save GMM",default='./GMM/',type=str)
+    parser.add_argument('-gN','--GMMName',help="name of gmm to save/load", default="toy",type=str)
     args = parser.parse_args()
     main(args)
 

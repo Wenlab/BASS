@@ -259,7 +259,7 @@ def get_W_ils(w_dict, double[:,:] Y, np.int_t[:] lengths_Y, double [:] params):
     cdef int i,w,k,j,lmin,l,kk,mlen,wtild
     cdef double [:] Pmtilds
     cdef np.int_t [:] seq_mtild
-    cdef double w_thr = params[4]
+    cdef double w_thr = params[3]
     cdef double w_thr_l = 0
     W_ils = []
     
@@ -486,7 +486,7 @@ def convert_Y_to_Y_Ps(Y,params,model):
     """
     Convert a data vector Y to a sequence of probability vectors q(Y_i|c_j).
     """
-    Sigma = int(params[7])
+    Sigma = int(params[5])
     Y_Ps = np.zeros((len(Y),Sigma),dtype = float)
     for i in range(len(Y)):
         for s in range(Sigma):
@@ -857,7 +857,7 @@ def remove_duplicates_w_dict(P_w,w_dict,params,model):
     dups = []
     if eps > 1e-3:
         JS = get_JS(w_dict,params,model)
-        Jthr = params[6]
+        Jthr = params[4]
         P_w_weighted = np.sum((JS < Jthr)*P_w,axis=1)
         
         for i in range(len(w_dict)):#Remove duplicates
@@ -956,7 +956,7 @@ def get_words_to_add(Y,lengths_Y,w_dict,params):
     R = evaluate_R(Q)
     R1 = evaluate_R1(Q)
     G = evaluate_G(R,R1,lmax)
-    w_thr = params[4]
+    w_thr = params[3]
     lmean = np.sum(P_w*lengths)
     for ibeta in range(len(w_dict)):
         lmin,lmax = get_lmin_and_max(w_dict[ibeta],params)
@@ -1014,7 +1014,7 @@ def solve_dictionary(Y,lengths_Y,params,model,niter = 6):
     
     w_dict = []
     Sigma = Y.shape[1]
-    params[7] = Sigma
+    params[5] = Sigma
 
     for i in range(Sigma):
         w_dict += [np.array([i], dtype = int)]

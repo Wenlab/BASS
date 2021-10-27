@@ -23,22 +23,22 @@ def main(args):
 
     # load data
 
-    data_null = np.load(args.PathData + 'data_condition{}.npy'.format(args.Condition1))
-    lengths_null = np.load(args.PathData + 'lengths_condition{}.npy'.format(args.Condition1))
+    data_null = np.load(args.PathData +args.DataName +'_dataset_condition{}.npy'.format(args.Condition1))
+    lengths_null = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.Condition1))
     
-    data_hyp = np.load(args.PathData + 'data_condition{}.npy'.format(args.Condition2))
-    lengths_hyp = np.load(args.PathData + 'lengths_condition{}.npy'.format(args.Condition2))
+    data_hyp = np.load(args.PathData +args.DataName+ '_dataset_condition{}.npy'.format(args.Condition2))
+    lengths_hyp = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.Condition2))
 
     # load GMM 
-    means_ = np.load(args.PathGMM + args.Savename + '_means.npy')
-    covars_ = np.load(args.PathGMM + args.Savename + '_covars.npy')
-    weights_ = np.load(args.PathGMM + args.Savename + '_weights.npy')
+    means_ = np.load(args.PathGMM + args.GMMName + '_means.npy')
+    covars_ = np.load(args.PathGMM + args.GMMName + '_covars.npy')
+    weights_ = np.load(args.PathGMM + args.GMMName + '_weights.npy')
 
     model_fit = GMM_model(len(means_))
     model_fit._read_params(means_,covars_,weights_)
 
     #Add names for each bout types
-    class_names = ['']
+    class_names = ['1','2','3','4','5','6','7']
     
     lengths_null = lengths_null[:]
     data_null = data_null[:np.sum(lengths_null)]
@@ -47,8 +47,8 @@ def main(args):
     data_hyp = data_hyp[:np.sum(lengths_hyp)]
 
     # Load BASS results
-    [P_null, n_null, w_dict_null] = reload_raw_results(args, condition=args.Condition1)
-    [P_hyp, n_hyp, w_dict_hyp] = reload_raw_results(args, condition=args.Condition2)
+    [P_null, n_null, w_dict_null] = load_results_raw(args, condition=args.Condition1)
+    [P_hyp, n_hyp, w_dict_hyp] = load_results_raw(args, condition=args.Condition2)
 
 
     # Format data and set calculation params 
@@ -56,12 +56,12 @@ def main(args):
     eps  = 0.1
     p_d  = 0.2
     p_ins = 0.2
-    mu = 1.0
-    H_beta_fac = 0
+    #mu = 1.0
+    #H_beta_fac = 0
     Jthr = 0.15
-    Sigma = Yhyp.shape[1]
-    std = 0.05
-    params = np.array([eps,p_d,p_ins, mu, w_thr,H_beta_fac, Jthr, Sigma, std], dtype =float)
+    Sigma = data_hyp.shape[1]
+    #std = 0.05
+    params = np.array([eps,p_d,p_ins, w_thr, Jthr, Sigma], dtype =float)
 
     for i in range(0, len(w_dict_null)):
         w_dict_null[i] = w_dict_null[i].astype('int')
@@ -71,7 +71,7 @@ def main(args):
 
     # perform comparison multiple times
     niter = 10
-    w_dict_combined = md.combine_dicts(w_dict_null,w_dict_hyp,params,model_fit)
+    w_dict_combined = cp.combine_dicts(w_dict_null,w_dict_hyp,params,model_fit)
     m2lnLR_hyp = np.zeros((niter,len(w_dict_combined)))
     empirical_hyp = np.zeros((niter,len(w_dict_combined)))
     expected_hyp = np.zeros((niter,len(w_dict_combined)))
@@ -105,17 +105,17 @@ def main(args):
         Yhyp_train = np.exp(model_fit._compute_log_likelihood(data_hyp_train) + Hhyp_train)
         #Yhyp_train = data_hyp_train
 
-        m2lnLR_hyp,emps_hyp,exps_hyp = cp.compare_datasets(Ynull, lengths_null, Yhyp_train, lengths_hyp_train, w_dict_null, w_dict_hyp, params,model_fit)
-
-        m2lnLR_hyps[n_] = m2lnLR_hyp
-        emps_hyps[n_] = emps_hyp
-        exps_hyps[n_] = exps_hyp
+        ln_hyp,emps_hyp,exps_hyp = cp.compare_datasets(Ynull, lengths_null, Yhyp_train, lengths_hyp_train, w_dict_null, w_dict_hyp, params,model_fit)
+ 
+        m2lnLR_hyp[n_] = ln_hyp
+        empirical_hyp[n_] = emps_hyp
+        expected_hyp[n_] = exps_hyp
 
     #Find the correct threshold to only take significant difference
 
     Lthr_acid = 15
-    filtered_L = np.prod(m2lnLR_hyps > Lthr_acid, axis = 0)
-    filtered_num = np.prod(emps_hyps > exps_hyps, axis = 0)
+    filtered_L = np.prod(m2lnLR_hyp > Lthr_acid, axis = 0)
+    filtered_num = np.prod(empirical_hyp > expected_hyp, axis = 0)
     filtered = filtered_L*filtered_num
     np.set_printoptions(precision = 2)
     filtered_indices = []
@@ -129,24 +129,27 @@ def main(args):
             filtered_indices += [i]
             filtered_motifs.append(motif)
             filtered_neg_log_P.append(np.mean(m2nLR_hyp,axis=0)[i])
-            filtered_empirical_value.append(np.mean(emps_hyp, axis=0)[i])
-            filtered_expected_value.append(np.mean(exps_hyp, axis=0)[i])
+            filtered_empirical_value.append(np.mean(empirical_hyp, axis=0)[i])
+            filtered_expected_value.append(np.mean(expected_hyp, axis=0)[i])
 
 
-    save_path = args.Out + args.Exp
-    compare_dict = pd.DataFrame({'Negative log P':filtered_neg_log_P,'Frequency in test':filtered_empirical_value,'Frequency in null':filtered_expected_value, 'Motifs':motifs})
-    compare_dict.to_csv(path_or_buf = save_path + '/Comparisons_cond{}vcond{}.csv'.format(args.Condition1,args.Condition2), index = False)
+    save_path = args.Out + args.DataName + '/'
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    compare_dict = pd.DataFrame({'Negative log P':filtered_neg_log_P,'Frequency in test':filtered_empirical_value,'Frequency in null':filtered_expected_value, 'Motifs':filtered_motifs})
+    compare_dict.to_csv(path_or_buf = save_path + '/' + args.Exp + 'Comparisons_cond{}vcond{}.csv'.format(args.Condition1,args.Condition2), index = False)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-seed','--Seed',help="Seed for data extraction", default=42,type=int)
-    parser.add_argument('-condition1','--Condition1', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
-    parser.add_argument('-condition2','--Condition2', help="Second Condition/experiment to use as the test case", default=1,type=int)
-    parser.add_argument('-pathData','--PathData',help="path to data",default='/Users/gautam.sridhar/Documents/Repos/BASS/Data/',type=str)
-    parser.add_argument('-pathGMM','--PathGMM', help="path to GMM", default='/Users/gautam.sridhar/Documents/Repos/BASS/GMM/', type=str)
-    parser.add_argument('-savename','--Savename',help="name of gmm to save/load", default="acid",type=str)
-    parser.add_argument('-exp','--Exp',help="name of the experiment to save as", default="pHtaxis",type=str)
-    parser.add_argument('-out','--Out',help="path save",default='/Users/gautam.sridhar/Documents/Repos/BASS/Results/',type=str)
+    parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
+    parser.add_argument('-c1','--Condition1', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
+    parser.add_argument('-c2','--Condition2', help="Second Condition/experiment to use as the test case", default=1,type=int)
+    parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
+    parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
+    parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)
+    parser.add_argument('-gN','--GMMName',help="name of gmm to save/load", default="toy",type=str)
+    parser.add_argument('-x','--Exp',help="name of the experiment to save as", default="toy",type=str)
+    parser.add_argument('-out','--Out',help="path save",default='./Results/',type=str)
     args = parser.parse_args()
     main(args)

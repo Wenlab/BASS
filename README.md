@@ -10,7 +10,9 @@ For questions, email gautam_nallamala(AT)fas.harvard.edu and gautam.sridhar(AT)i
 ## Requirements:
 Python3, 
 Cython, 
-NumPy, 
+NumPy,
+pandas,
+matplotlib
 SciPy
 Sklearn 
 editdistance 
@@ -23,18 +25,11 @@ pip3 install editdistance
 
 Before running any of the code, bass.pyx has to be compiled using:
 
-python3 setup_bass.py build_ext --inplace 
-
-To run a test case, use:
-
-python3 main_synthetic_data.py 7 50 5 10000 0.0 0.0 0.15 4 0.0 1 &
+python3 BASS/setup_bass.py build_ext --inplace
 
 bass.pyx contains the implementation of the motif discovery algorithm, the specification of the mixture model and miscellaneous functions used for the analysis in the paper.  
 
-main_synthetic_dataset.py is a sample application of the algorithm. This code generates a synthetic dictionary of motifs, a dataset from that dictionary and applies the motif discovery algorithm on the dataset. The output files contain the true dictionary and the one learned by the algorithm along with the probabilities of each motif. 
-
 ### Important:
-For each new application, a `soft’ clustering model has to be specified. In the code, this is implemented in the GMM_synthetic class in bass.pyx. This class has to be appropriately modified or alternatively a new class should be defined which contains the two functions defined for this class – “_compute_likelihood” and “_generate_sample_from_state”. 
+For each new application, a `soft’ clustering model has to be specified. 
 
-If instead you have the data as a sequence of cluster labels, i.e., `hard' clustered data, then convert it into a sequence of probability vectors, where each probability vector is a unit vector. 
-
+If instead you have the data as a sequence of cluster labels, i.e., `hard' clustered data, then convert it into a sequence of probability vectors, and define a gmm model with means as the centers of the clusters and the circular standard deviation of 1.0

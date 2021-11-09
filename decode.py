@@ -24,7 +24,7 @@ def main(args):
     # load data
 
     data = np.load(args.PathData + args.DataName + '_dataset_condition{}.npy'.format(args.Condition))
-    lengths = np.load(args.PathData +args.DataName +  '_lengths_condition{}.npy'.format(args.Condition))
+    lengths = np.load(args.PathData +args.DataName +  '_lengths_condition{}.npy'.format(args.Condition)).astype(np.int)
 
     lengths_flat = lengths[:]
     data_flat = data[:np.sum(lengths_flat)]

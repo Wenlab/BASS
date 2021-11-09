@@ -26,7 +26,7 @@ def main(args):
     # load data
 
     data = np.load(args.PathData + args.DataName + '_dataset_condition{}.npy'.format(args.Condition))
-    lengths = np.load(args.PathData + args.DataName +'_lengths_condition{}.npy'.format(args.Condition))
+    lengths = np.load(args.PathData + args.DataName +'_lengths_condition{}.npy'.format(args.Condition)).astype(np.int)
 
     # load GMM 
     means_ = np.load(args.PathGMM + args.GMMName + "_means.npy")

@@ -23,11 +23,11 @@ def main(args):
 
     # load data
 
-    data_null = np.load(args.PathData +args.DataName +'_dataset_condition{}.npy'.format(args.Condition1))
-    lengths_null = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.Condition1))
+    data_null = np.load(args.PathData +args.DataName +'_dataset_condition{}.npy'.format(args.ConditionNull))
+    lengths_null = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionNull)).astype(np.int)
     
-    data_hyp = np.load(args.PathData +args.DataName+ '_dataset_condition{}.npy'.format(args.Condition2))
-    lengths_hyp = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.Condition2))
+    data_hyp = np.load(args.PathData +args.DataName+ '_dataset_condition{}.npy'.format(args.ConditionHyp))
+    lengths_hyp = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionHyp)).astype(np.int)
 
     # load GMM 
     means_ = np.load(args.PathGMM + args.GMMName + '_means.npy')
@@ -51,8 +51,8 @@ def main(args):
     data_hyp = data_hyp[:np.sum(lengths_hyp)]
 
     # Load BASS results
-    [P_null, n_null, w_dict_null] = load_results_raw(args, condition=args.Condition1)
-    [P_hyp, n_hyp, w_dict_hyp] = load_results_raw(args, condition=args.Condition2)
+    [P_null, n_null, w_dict_null] = load_results_raw(args, condition=args.ConditionNull)
+    [P_hyp, n_hyp, w_dict_hyp] = load_results_raw(args, condition=args.ConditionHyp)
 
 
     # Format data and set calculation params 
@@ -141,7 +141,7 @@ def main(args):
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     compare_dict = pd.DataFrame({'Negative log P':filtered_neg_log_P,'Frequency in test':filtered_empirical_value,'Frequency in null':filtered_expected_value, 'Motifs':filtered_motifs})
-    compare_dict.to_csv(path_or_buf = save_path + '/' + args.Exp + 'Comparisons_cond{}vcond{}.csv'.format(args.Condition1,args.Condition2), index = False)
+    compare_dict.to_csv(path_or_buf = save_path + '/' + args.Exp + '_Comparisons_cond{}vcond{}.csv'.format(args.ConditionNull,args.ConditionHyp), index = False)
 
 
 if __name__ == "__main__":

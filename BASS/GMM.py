@@ -4,11 +4,13 @@
 #To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/ or send a letter to Creative Commons, 
 #PO Box 1866, Mountain View, CA 94042, USA.
 
+import sys
+sys.path.append('./BASS/')
 import numpy as np
 import scipy.stats as stats
 from scipy.stats import norm
 from copy import deepcopy
-
+import bass as md
 
 class GMM_synthetic:
     """
@@ -21,9 +23,9 @@ class GMM_synthetic:
         self.Sigma = int(params[7])
         self.std = float(params[8])
     def _compute_likelihood(self,y,s):
-        return P_ygs(y,s,self.Sigma,self.std)
+        return md.P_ygs(y,s,self.Sigma,self.std)
     def _generate_sample_from_state(self,s):
-        return sample_y(s,self.Sigma,self.std)
+        return md.sample_y(s,self.Sigma,self.std)
 
 
 class GMM_model:

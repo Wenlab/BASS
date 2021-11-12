@@ -3,7 +3,7 @@ Stand alone package for the algorithm "Behavioral Action Sequence Segmentation".
 
 This repository contains all the code for the implementation of the motif discovery algorithm BASS from paper ["A lexical approach for identifying behavioral action sequences"](https://www.biorxiv.org/content/10.1101/2020.08.27.270694v1.abstract). 
 
-This repository allows you to run BASS on your own dataset. In order to reproduce the results from the paper please refer to the the [original repository](https://github.com/greddy992/BASS). For a sister repository on running BASS please check [here] (https://github.com/oliviermirat/BASSlibrary)
+This repository allows you to run BASS on your own dataset. In order to reproduce the results from the paper please refer to the the [original repository](https://github.com/greddy992/BASS). For a sister repository on running BASS please check [here](https://github.com/oliviermirat/BASSlibrary)
 
 For questions, email gautam_nallamala(AT)fas.harvard.edu and gautam.sridhar(AT)icm-institute.org
 

@@ -19,9 +19,9 @@ class GMM_synthetic:
     The current implementation of these two functions is for 
     the synthetic data case presented in the paper.
     """
-    def __init__(self,params):
-        self.Sigma = int(params[7])
-        self.std = float(params[8])
+    def __init__(self,params,std):
+        self.Sigma = int(params[5])
+        self.std = float(std)
     def _compute_likelihood(self,y,s):
         return md.P_ygs(y,s,self.Sigma,self.std)
     def _generate_sample_from_state(self,s):

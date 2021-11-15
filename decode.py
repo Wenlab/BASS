@@ -64,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
     parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)
     parser.add_argument('-gN','--GMMName',help="name of gmm to save/load", default="toy",type=str)
-    parser.add_argument('-exp','--Exp',help="name of the experiment to save as", default="toy",type=str)
+    parser.add_argument('-x','--Exp',help="name of the experiment to save as", default="toy",type=str)
     parser.add_argument('-out','--Out',help="path save",default='./Results/',type=str)
     args = parser.parse_args()
     main(args)

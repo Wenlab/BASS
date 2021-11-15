@@ -24,10 +24,10 @@ def main(args):
     # load data
 
     data_null = np.load(args.PathData +args.DataName +'_dataset_condition{}.npy'.format(args.ConditionNull))
-    lengths_null = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionNull)).astype(np.int)
+    lengths_null = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionNull)).astype(int)
     
     data_hyp = np.load(args.PathData +args.DataName+ '_dataset_condition{}.npy'.format(args.ConditionHyp))
-    lengths_hyp = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionHyp)).astype(np.int)
+    lengths_hyp = np.load(args.PathData +args.DataName+ '_lengths_condition{}.npy'.format(args.ConditionHyp)).astype(int)
 
     # load GMM 
     means_ = np.load(args.PathGMM + args.GMMName + '_means.npy')

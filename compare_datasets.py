@@ -117,8 +117,8 @@ def main(args):
 
     #Find the correct threshold to only take significant difference
 
-    Lthr_acid = 15
-    filtered_L = np.prod(m2lnLR_hyp > Lthr_acid, axis = 0)
+    args.Lthr = 15
+    filtered_L = np.prod(m2lnLR_hyp > args.Lthr, axis = 0)
     filtered_num = np.prod(empirical_hyp > expected_hyp, axis = 0)
     filtered = filtered_L*filtered_num
     np.set_printoptions(precision = 2)
@@ -149,6 +149,7 @@ if __name__ == "__main__":
     parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
     parser.add_argument('-cn','--ConditionNull', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
     parser.add_argument('-ch','--ConditionHyp', help="Second Condition/experiment to use as the test case", default=1,type=int)
+    parser.add_argument('-t','--Lthr',help="Threshold on the - log p value to select relevant motifs", default=5,type=int)
     parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
     parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
     parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)

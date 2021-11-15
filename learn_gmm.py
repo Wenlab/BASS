@@ -117,94 +117,6 @@ def val(args, datasets,clusters,n_reps):
     plt.savefig(args.PathGMM + args.GMMName +  "_figure_heldout_LL.png")
 
 
-def analyze_kinematics(args, datasets, tail_angles ,model_fit):
-    """
-    If the data was extracted from Zebrazoom, use this function to analyze average kinematics of individual bout types
-
-    Parameters:
-    args: Argparse object containing general arguments
-    datasets: A list of datasets over which to learn GMM. Size of list should be number of conditions/experiments
-              Each dataset in the list should be num_bouts x n_features.
-    tail_angles: A list containing raw tail angles for each dataset. Size of list should be number of condition/experiments
-                 Each dataset in the list should be num_bouts x num_frames x num_points
-    model_fit: gmm model to be analyzed
-    """
-
-    speeds = []
-    deltaheads = []
-    tails = []
-
-    ta = tail_angles[args.Condition]
-    data = datasets[args.Condition]
-    n_cluster = len(model_fit.means_)
-
-    for i in range(n_cluster):
-        speeds += [[]]
-        deltaheads += [[]]
-        tails += [[]]
-
-    states = np.argmax(model_fit._compute_posterior(data,args.Condition),axis=0)
-    for i,state in enumerate(states):
-        speeds[state] += [data[i,1]]
-        deltaheads[state] +=  [data[i,0]]
-        tails[state] += [ta[i,:,0]]
-
-    fig1,axis1= plt.subplots(1,1,figsize = (4,3))
-    fig2,axis2= plt.subplots(1,1,figsize = (4,3))
-
-    for state in np.arange(n_cluster):
-    
-        n,bins = np.histogram(speeds[state], bins = np.linspace(0,35,20), density = True)
-        bins = 0.5*(bins[1:] + bins[:-1])
-        axis1.plot(bins, n,'C%do-'%state, ms = 2)
-        
-        n,bins = np.histogram(deltaheads[state], bins = np.linspace(0,150,20), density = True)
-        bins = 0.5*(bins[1:] + bins[:-1])
-        axis2.plot(bins, n,'C%do-'%state, ms = 2)
-    
-        fg,ax=plt.subplots(1,1,figsize = (3,2))
-        arr = np.array(tails[state])
-        arrs_fil0 = arr[np.mean(arr,axis=1) > 0]
-        arrs_fil1 = arr[np.mean(arr,axis=1) < 0]
-    
-        for num in range(200):
-            ax.plot(np.arange(len(arrs_fil0[num]))*1e3/160.,arrs_fil0[num] * (180 / np.pi),'k-',alpha = 0.01)
-        ax.plot(np.arange(len(arrs_fil0[0]))*1e3/160.,np.mean(arrs_fil0,axis=0)* (180/ np.pi),'C%d'%state,lw = 4)
- 
-        ax.set_ylim(-20,70)
-        ax.tick_params(labelsize = 20)
-        ax.spines['top'].set_linewidth(1.25)
-        ax.spines['left'].set_linewidth(1.25)
-        ax.spines['bottom'].set_linewidth(1.25)
-        ax.spines['right'].set_linewidth(1.25)
-        ax.set_xlabel("Time (ms)", fontsize = 20)
-        ax.set_ylabel(r"Tail angle($^o$)", fontsize = 20)
-        fg.tight_layout()
-        fg.savefig(args.PathGMM + args.GMMName +"_figure_tailangles_clusters_tailanglespca_kin_{}_condition{}.png".format(state,args.Condition))
-        print(np.mean(speeds[state]),np.mean(deltaheads[state]), model_fit.weights_[:,state])
-
-    axis1.tick_params(labelsize = 24)
-    axis1.spines['top'].set_linewidth(1.25)
-    axis1.spines['left'].set_linewidth(1.25)
-    axis1.spines['bottom'].set_linewidth(1.25)
-    axis1.spines['right'].set_linewidth(1.25)
-    axis1.set_xlabel("Speed (mm/s)",fontsize = 24)
-    axis1.set_ylabel("PDF",fontsize = 24)
-    fig1.tight_layout()
-
-    axis2.tick_params(labelsize = 24)
-    axis2.spines['top'].set_linewidth(1.25)
-    axis2.spines['left'].set_linewidth(1.25)
-    axis2.spines['bottom'].set_linewidth(1.25)
-    axis2.spines['right'].set_linewidth(1.25)
-    axis2.set_xlabel("Delta heading (deg)",fontsize = 24)
-    axis2.set_ylabel("PDF",fontsize = 24)
-    fig2.tight_layout()
-
-    fig1.savefig(args.PathGMM + args.GMMName  +"_speed_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
-    fig2.savefig(args.PathGMM + args.GMMName  +"_deltahead_clusters_tailanglesPCA_and_kin_condition{}.png".format(args.Condition))
-
-
 def main(args):
 
     datasets = []
@@ -218,13 +130,9 @@ def main(args):
 
     for n in args.Condition:
         datasets.append(np.load(datapath + "condition{}.npy".format(n)))
-        if args.Kinematics == True:        
-            tapath = args.PathData + args.DataName+ "_tailangles_"
-            tail_angles.append(np.load(tapath + "condition{}.npy".format(n)))
+
     if args.Type == 'train' :
         model_fit = train(args, datasets, args.N_cluster)
-        if args.Kinematics == True:
-            analyze_kinematics(args, datasets, tail_angles, model_fit)
 
     elif args.Type ==  'val':
         clusters = np.arange(3,11)
@@ -237,7 +145,6 @@ if __name__ == "__main__":
     parser.add_argument('-t','--Type',help="whether to train or val", default='train', type=str)
     parser.add_argument('-c','--Condition',nargs='+',help= "types of experiment to run/analyze", type=int)
     parser.add_argument('-n','--N_cluster',help="If train, set the number of clusters", default=7, type=int)
-    parser.add_argument('-k','--Kinematics',help="Analyze kinematics, if available",  action='store_true')
     parser.add_argument('-l','--Load',help="During training, whether to load a previously saved GMM or learn it",action='store_true')
     parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
     parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)

@@ -81,22 +81,31 @@ def main(args):
     expected_hyp = np.zeros((niter,len(w_dict_combined)))
 
     for n_ in range(niter):
-        L = 0.8*len(data_hyp)
+        if len(lengths_hyp) > 1:
+            L = 0.8*len(data_hyp)
 
-        length_per_traj = len(data_hyp)/len(lengths_hyp)
-        numtrajs = int(L/length_per_traj)
+            length_per_traj = len(data_hyp)/len(lengths_hyp)
+            numtrajs = int(L/length_per_traj)
 
-        sample_lengths = np.random.choice(len(lengths_hyp),numtrajs, replace=False)
-        nonsample_lengths = np.delete(np.arange(len(lengths_hyp)),sample_lengths)
+            sample_lengths = np.random.choice(len(lengths_hyp),numtrajs, replace=False)
+            nonsample_lengths = np.delete(np.arange(len(lengths_hyp)),sample_lengths)
 
-        lengths_hyp_train = lengths_hyp[sample_lengths]
-        for i,l in enumerate(sample_lengths):
-            first = np.sum(lengths_hyp[:l])
-            last = np.sum(lengths_hyp[:l+1])
-            if i==0:
-                data_hyp_train = data_hyp[first:last]
+            lengths_hyp_train = lengths_hyp[sample_lengths]
+            for i,l in enumerate(sample_lengths):
+                first = np.sum(lengths_hyp[:l])
+                last = np.sum(lengths_hyp[:l+1])
+                if i==0:
+                    data_hyp_train = data_hyp[first:last]
+                else:
+                    data_hyp_train = np.concatenate((data_hyp_train, data_hyp[first:last]))
+
             else:
-                data_hyp_train = np.concatenate((data_hyp_train, data_hyp[first:last]))
+                L = int(0.8*len(data_hyp))
+                lengths_hyp_train = [L]
+
+                first = np.random.randint(0,len(data_hyp) - L)
+                last =  first + L
+                data_hyp_train = data_hyp[first:last]
 
         lengths_null = lengths_null[:]
         data_null = data_null[:np.sum(lengths_null)]

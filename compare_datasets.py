@@ -7,6 +7,7 @@
 
 import os
 import sys
+import time
 sys.path.append('./BASS/')
 sys.path.append('./Utils/')
 import argparse
@@ -81,6 +82,7 @@ def main(args):
     expected_hyp = np.zeros((niter,len(w_dict_combined)))
 
     for n_ in range(niter):
+        np.random.seed(int(time.time()))
         if len(lengths_hyp) > 1:
             L = 0.8*len(data_hyp)
 
@@ -126,8 +128,6 @@ def main(args):
         expected_hyp[n_] = exps_hyp
 
     #Find the correct threshold to only take significant difference
-
-    args.Lthr = 15
     filtered_L = np.prod(m2lnLR_hyp > args.Lthr, axis = 0)
     filtered_num = np.prod(empirical_hyp > expected_hyp, axis = 0)
     filtered = filtered_L*filtered_num
@@ -139,14 +139,15 @@ def main(args):
     filtered_expected_value = []
     for i in range(len(filtered)):
         if filtered[i] == 1 and len(w_dict_combined[i]) > 1:
-            motif = [classNamesConvertion[a] for a in w_dict_combined[i]]
+            motif = [class_names[a] for a in w_dict_combined[i]]
             filtered_indices += [i]
             filtered_motifs.append(motif)
-            filtered_neg_log_P.append(np.mean(m2nLR_hyp,axis=0)[i])
+            filtered_neg_log_P.append(np.mean(m2lnLR_hyp,axis=0)[i])
             filtered_empirical_value.append(np.mean(empirical_hyp, axis=0)[i])
             filtered_expected_value.append(np.mean(expected_hyp, axis=0)[i])
-
-
+    
+    print(filtered_neg_log_P)
+    print(filtered_motifs)
     save_path = args.Out + args.DataName + '/'
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -159,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
     parser.add_argument('-cn','--ConditionNull', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
     parser.add_argument('-ch','--ConditionHyp', help="Second Condition/experiment to use as the test case", default=1,type=int)
-    parser.add_argument('-t','--Lthr',help="Threshold on the - log p value to select relevant motifs", default=5,type=int)
+    parser.add_argument('-t','--Lthr',help="Threshold on the - log p value to select relevant motifs", default=0.1,type=int)
     parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
     parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
     parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)

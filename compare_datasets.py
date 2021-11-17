@@ -99,13 +99,13 @@ def main(args):
                 else:
                     data_hyp_train = np.concatenate((data_hyp_train, data_hyp[first:last]))
 
-            else:
-                L = int(0.8*len(data_hyp))
-                lengths_hyp_train = [L]
+        else:
+            L = int(0.8*len(data_hyp))
+            lengths_hyp_train = [L]
 
-                first = np.random.randint(0,len(data_hyp) - L)
-                last =  first + L
-                data_hyp_train = data_hyp[first:last]
+            first = np.random.randint(0,len(data_hyp) - L)
+            last =  first + L
+            data_hyp_train = data_hyp[first:last]
 
         lengths_null = lengths_null[:]
         data_null = data_null[:np.sum(lengths_null)]
@@ -116,6 +116,7 @@ def main(args):
 
         Hhyp_train =  -model_fit.score(data_hyp_train,0)/len(data_hyp_train)
         Yhyp_train = np.exp(model_fit._compute_log_likelihood(data_hyp_train) + Hhyp_train)
+
         #Yhyp_train = data_hyp_train
 
         ln_hyp,emps_hyp,exps_hyp = cp.compare_datasets(Ynull, lengths_null, Yhyp_train, lengths_hyp_train, w_dict_null, w_dict_hyp, params,model_fit)

@@ -25,7 +25,9 @@ pip3 install editdistance
 
 Before running any of the code, bass.pyx has to be compiled using:
 
-python3 BASS/setup_bass.py build_ext --inplace
+Navigate to the folder BASS/    then run
+
+python3 setup_bass.py build_ext --inplace
 
 bass.pyx contains the implementation of the motif discovery algorithm, the specification of the mixture model and miscellaneous functions used for the analysis in the paper.  
 

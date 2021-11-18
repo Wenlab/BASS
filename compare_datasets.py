@@ -160,7 +160,7 @@ if __name__ == "__main__":
     parser.add_argument('-s','--Seed',help="Seed for data extraction", default=42,type=int)
     parser.add_argument('-cn','--ConditionNull', help="First Condition/experiment to use as null hypothesis",default=0 ,type=int)
     parser.add_argument('-ch','--ConditionHyp', help="Second Condition/experiment to use as the test case", default=1,type=int)
-    parser.add_argument('-t','--Lthr',help="Threshold on the - log p value to select relevant motifs", default=0.1,type=int)
+    parser.add_argument('-t','--Lthr',help="Threshold on the - log p value to select relevant motifs", default=0.1,type=float)
     parser.add_argument('-pD','--PathData',help="path to data",default='./Data/',type=str)
     parser.add_argument('-dN','--DataName',help="name of the dataset", default='toy', type=str)
     parser.add_argument('-pG','--PathGMM', help="path to GMM", default='./GMM/', type=str)

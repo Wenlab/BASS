@@ -8,7 +8,7 @@ This repository allows you to run BASS on your own dataset. In order to reproduc
 For questions, email gautam_nallamala(AT)fas.harvard.edu and gautam.sridhar(AT)icm-institute.org
 
 ## Requirements:
-Python3, 
+Python3.8 or below, 
 Cython, 
 NumPy,
 pandas,
@@ -30,6 +30,11 @@ Navigate to the folder BASS/    then run
 python3 setup_bass.py build_ext --inplace
 
 bass.pyx contains the implementation of the motif discovery algorithm, the specification of the mixture model and miscellaneous functions used for the analysis in the paper.  
+
+
+A detailed document on how to use the code can be found [here](https://docs.google.com/document/d/1o0GQ_vlnxlxSSDabjHCkHIsfRJ67edAQIV1Dn_xPfOI/edit?usp=sharing).
+
+What follows below is a brief description to get started.
 
 ## Dataset organization
 

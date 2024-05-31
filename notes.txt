@@ -1,0 +1,4 @@
+1. synth_weights.npy里面，有两行，分别对应condition 0, 1，有7列，分别对应7个类。
+2. 为什么synth_condition_0_seg_bouttypes.npy的长度比数据总长度短？难道有一些bout没有分类？因为有些motif的实现中出现插入？
+3. 为什么synth_condition_0_seg_words.npy中缺少最高概率的4种motif？（总共缺少6种motif）虽然"a motif may never appear in the most likely partitioning even though it has non-zero pm"，但是最高概率的几个motif不应该不出现吧？
+4. README里"If instead you have the data as a sequence of cluster labels, i.e., `hard' clustered data, then convert it into a sequence of probability vectors, and define a gmm model with means as the centers of the clusters and the circular standard deviation of 1.0"为什么不直接以labels为means，std设为特别小的正数？

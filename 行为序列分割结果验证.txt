@@ -1,0 +1,36 @@
+Inconsistent word length! position:  20 length difference: -1
+Inconsistent word length! position:  73 length difference: -1
+Inconsistent word length! position:  164 length difference: -1
+Inconsistent word length! position:  227 length difference: -1
+Inconsistent word length! position:  258 length difference: -1
+Inconsistent word length! position:  340 length difference: -1
+Inconsistent word length! position:  636 length difference: -1
+Inconsistent word length! position:  885 length difference: -1
+Inconsistent word length! position:  919 length difference: -1
+Inconsistent word length! position:  1058 length difference: -1
+Inconsistent word length! position:  1162 length difference: -1
+Inconsistent word length! position:  1227 length difference: -1
+Inconsistent word length! position:  2008 length difference: -1
+Inconsistent word length! position:  2548 length difference: -1
+Inconsistent word length! position:  2598 length difference: -1
+Inconsistent word length! position:  2865 length difference: -1
+Inconsistent word length! position:  3092 length difference: -1
+Inconsistent word length! position:  3263 length difference: -1
+Inconsistent word length! position:  3498 length difference: -1
+Inconsistent word length! position:  3784 length difference: -1
+Inconsistent word length! position:  3884 length difference: -1
+Inconsistent word length! position:  4015 length difference: -1
+Inconsistent word length! position:  4529 length difference: -1
+Inconsistent word length! position:  4674 length difference: -1
+seg_bouttypes reconstruction right!
+
+只出现了9个word：[ 4 12 16 17 22 29 31 32 33]
+4：4
+12：2
+16：6
+17：3,4,5,0 （出现最少）
+22：1,1
+29：3
+31：5
+32：3,1
+33：0

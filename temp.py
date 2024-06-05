@@ -1,6 +1,7 @@
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
+import scipy.io
 
 synth_covars = np.load(".\\GMM\\synth_covars.npy")
 synth_means = np.load(".\\GMM\\synth_means.npy")
@@ -44,5 +45,14 @@ else:
 unique_elements_in_synth_condition_0_seg_words = np.unique(synth_condition_0_seg_words)
 # plt.hist(synth_condition_0_seg_words, bins=31, color='skyblue', edgecolor='black')
 # plt.show()
+
+# Prepare the data. Transform mat files to npy files.
+mat = scipy.io.loadmat('D:\\Nutstore\\我的坚果云\\临时\\2023_11_28-16_56_8\\behavior\\bouts_softmax_output_withHeadingVelocity_extent4.mat')
+data = np.transpose(mat['softmaxOutput'])
+np.save('.\\Data\\2023_11_28-16_56_8_dataset_condition0.npy', data.astype(np.float64))
+np.save('.\\Data\\2023_11_28-16_56_8_lengths_condition0.npy', np.array([data.shape[0]], dtype=np.int64))
+ldg_dataset_condition0 = np.load(".\\Data\\2023_11_28-16_56_8_dataset_condition0.npy")
+ldg_lengths_condition0 = np.load(".\\Data\\2023_11_28-16_56_8_lengths_condition0.npy")
+
 
 temp_var4 = np.load(".\\Data\\synth_dataset_condition0.npy")

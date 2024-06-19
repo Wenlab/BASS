@@ -64,3 +64,34 @@ ldg_means = np.load(".\\GMM\\20231128_means.npy")
 ldg_weights = np.load(".\\GMM\\20231128_weights.npy")
 
 temp_var4 = np.load(".\\Data\\synth_dataset_condition0.npy")
+
+
+
+import numpy as np
+from scipy import stats
+
+def make_positive_semidefinite(cov_matrix, epsilon=1e-6):
+    # Make the matrix symmetric
+    cov_matrix = (cov_matrix + cov_matrix.T) / 2
+    # Add epsilon to the diagonal elements
+    cov_matrix += np.eye(cov_matrix.shape[0]) * epsilon
+    # Ensure positive semidefiniteness by checking eigenvalues
+    eigvals = np.linalg.eigvalsh(cov_matrix)
+    if np.any(eigvals < 0):
+        min_eigval = np.min(eigvals)
+        cov_matrix += np.eye(cov_matrix.shape[0]) * (-min_eigval + epsilon)
+    return cov_matrix
+
+# Modify your scoring function
+def score(self, dataset, allow_singular=False):
+    temp = 0
+    for k in range(self.n_components):
+        cov_matrix = self.covars_[k]
+        cov_matrix = make_positive_semidefinite(cov_matrix)
+        temp += self.weights_[set_index, k] * stats.multivariate_normal.pdf(
+            dataset, mean=self.means_[k], cov=cov_matrix, allow_singular=allow_singular
+        )
+    return temp
+
+# In the main function, set allow_singular=True if needed
+H = -model_fit.score(data_flat, args.Condition, allow_singular=True) / len(data_flat)  # entropy

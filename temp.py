@@ -49,10 +49,18 @@ unique_elements_in_synth_condition_0_seg_words = np.unique(synth_condition_0_seg
 # Prepare the data. Transform mat files to npy files.
 mat = scipy.io.loadmat('D:\\Nutstore\\我的坚果云\\临时\\2023_11_28-16_56_8\\behavior\\bouts_softmax_output_withHeadingVelocity_extent4.mat')
 data = np.transpose(mat['softmaxOutput'])
-np.save('.\\Data\\2023_11_28-16_56_8_dataset_condition0.npy', data.astype(np.float64))
-np.save('.\\Data\\2023_11_28-16_56_8_lengths_condition0.npy', np.array([data.shape[0]], dtype=np.int64))
-ldg_dataset_condition0 = np.load(".\\Data\\2023_11_28-16_56_8_dataset_condition0.npy")
-ldg_lengths_condition0 = np.load(".\\Data\\2023_11_28-16_56_8_lengths_condition0.npy")
-
+np.save('.\\Data\\20231128_dataset_condition0.npy', data.astype(np.float64))
+np.save('.\\Data\\20231128_lengths_condition0.npy', np.array([data.shape[0]], dtype=np.int64))
+ldg_covars = mat['covs']
+ldg_means = mat['means']
+ldg_weights = mat['weights']
+np.save('.\\GMM\\20231128_covars.npy', ldg_covars.astype(np.float64))
+np.save('.\\GMM\\20231128_means.npy', ldg_means.astype(np.float64))
+np.save('.\\GMM\\20231128_weights.npy', ldg_weights.astype(np.float64))
+ldg_dataset_condition0 = np.load(".\\Data\\20231128_dataset_condition0.npy")
+ldg_lengths_condition0 = np.load(".\\Data\\20231128_lengths_condition0.npy")
+ldg_covars = np.load(".\\GMM\\20231128_covars.npy")
+ldg_means = np.load(".\\GMM\\20231128_means.npy")
+ldg_weights = np.load(".\\GMM\\20231128_weights.npy")
 
 temp_var4 = np.load(".\\Data\\synth_dataset_condition0.npy")

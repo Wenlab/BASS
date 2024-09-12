@@ -43,8 +43,8 @@ import scipy.io
 #     print("\n")
 #
 # unique_elements_in_synth_condition_0_seg_words = np.unique(synth_condition_0_seg_words)
-# # plt.hist(synth_condition_0_seg_words, bins=31, color='skyblue', edgecolor='black')
-# # plt.show()
+# plt.hist(synth_condition_0_seg_words, bins=31, color='skyblue', edgecolor='black')
+# plt.show()
 
 # # Prepare the data. Transform mat files to npy files.
 # mat = scipy.io.loadmat('D:\\Nutstore\\我的坚果云\\临时\\2023_11_28-16_56_8\\behavior\\bouts_softmax_output_withHeadingVelocity_extent4.mat')
@@ -63,14 +63,31 @@ import scipy.io
 # ldg_means = np.load(".\\GMM\\20231128_means.npy")
 # ldg_weights = np.load(".\\GMM\\20231128_weights.npy")
 
-# Transform npy result files to mat files.
-ldg_condition_0_seg_bouttypes = np.load(".\\Results\\20231128\\20231128_condition_0_seg_bouttypes.npy")
-ldg_condition_0_seg_lengths = np.load(".\\Results\\20231128\\20231128_condition_0_seg_lengths.npy")
-ldg_condition_0_seg_words = np.load(".\\Results\\20231128\\20231128_condition_0_seg_words.npy")
-fw = open(".\\Results\\20231128\\20231128_condition_0\\BASSresults",'rb')
+# mat = scipy.io.loadmat('D:\\文件\\学习工作\\WenLab\\behavior_analysis\\working\\images\\bouts_merged_softmax_output_withHeadingVelocity_extent4.mat')
+# data = np.transpose(mat['softmaxOutput_merged'])
+# lengths = mat['lengths']
+# np.save('D:\\github_repositories\\BASS\\Data\\lidaguang_merged_dataset_condition0.npy', data.astype(np.float64))
+# np.save('D:\\github_repositories\\BASS\\Data\\lidaguang_merged_lengths_condition0.npy', np.reshape(lengths.astype(np.int64),lengths.shape[0]))
+# ldg_covars = mat['covs']
+# ldg_means = mat['means']
+# ldg_weights = mat['weights']
+# np.save('D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_covars.npy', ldg_covars.astype(np.float64))
+# np.save('D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_means.npy', ldg_means.astype(np.float64))
+# np.save('D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_weights.npy', ldg_weights.astype(np.float64))
+# ldg_dataset_condition0 = np.load("D:\\github_repositories\\BASS\\Data\\lidaguang_merged_dataset_condition0.npy")
+# ldg_lengths_condition0 = np.load("D:\\github_repositories\\BASS\\Data\\lidaguang_merged_lengths_condition0.npy")
+# ldg_covars = np.load("D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_covars.npy")
+# ldg_means = np.load("D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_means.npy")
+# ldg_weights = np.load("D:\\github_repositories\\BASS\\GMM\\lidaguang_merged_weights.npy")
+
+# # Transform npy result files to mat files.
+ldg_condition_0_seg_bouttypes = np.load("D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_condition_0_seg_bouttypes.npy")
+ldg_condition_0_seg_lengths = np.load("D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_condition_0_seg_lengths.npy")
+ldg_condition_0_seg_words = np.load("D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_condition_0_seg_words.npy")
+fw = open("D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_condition_0\\BASSresults",'rb')
 data = pickle.load(fw)
-scipy.io.savemat('.\\Results\\20231128\\20231128_results.mat', {'seg_bouttypes': ldg_condition_0_seg_bouttypes, 'seg_lengths': ldg_condition_0_seg_lengths, 'seg_words': ldg_condition_0_seg_words})
+scipy.io.savemat('D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_results.mat', {'seg_bouttypes': ldg_condition_0_seg_bouttypes, 'seg_lengths': ldg_condition_0_seg_lengths, 'seg_words': ldg_condition_0_seg_words})
 dictionary = {f'word_{i:03d}': arr for i, arr in enumerate(data[2])}
-scipy.io.savemat('.\\Results\\20231128\\20231128_dictionary.mat', dictionary)
+scipy.io.savemat('D:\\github_repositories\\BASS\\Results\\lidaguang_merged_all_plus_kexin\\lidaguang_merged_dictionary.mat', dictionary)
 
 temp_var4 = np.load(".\\Data\\synth_dataset_condition0.npy")
